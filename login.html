@@ -3,24 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #fff;
+      padding: 40px 50px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0f5bb5;
+    }
+
+    #forgot {
+      display: block;
+      margin-top: 10px;
+      color: #1976d2;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+
+    #remember-container {
+      margin-top: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    #message {
+      margin-top: 15px;
+      color: red;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login / Signup</h2>
+  <div class="login-container">
+    <h2>Login / Signup</h2>
 
-  <input type="email" id="email" placeholder="Email"><br><br>
-  <input type="password" id="password" placeholder="Password"><br><br>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
 
-  <button id="signup">Sign Up</button>
-  <button id="login">Login</button>
+    <div id="remember-container">
+      <input type="checkbox" id="remember"> Remember Me
+    </div>
 
-  <p id="message"></p>
+    <button id="signup">Sign Up</button>
+    <button id="login">Login</button>
+
+    <span id="forgot">Forgot Password?</span>
+
+    <p id="message"></p>
+  </div>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, browserLocalPersistence, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
 
-    // ✅ Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
       authDomain: "otp-dashboard-3c17e.firebaseapp.com",
@@ -36,7 +116,33 @@
 
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
+    const rememberCheckbox = document.getElementById('remember');
     const message = document.getElementById('message');
+
+    // Redirect if already logged in
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        window.location.href = "dashboard.html";
+      }
+    });
+
+    function loginUser(email, password) {
+      const persistence = rememberCheckbox.checked ? browserLocalPersistence : browserSessionPersistence;
+
+      setPersistence(auth, persistence)
+        .then(() => {
+          return signInWithEmailAndPassword(auth, email, password);
+        })
+        .then(() => {
+          message.style.color = "green";
+          message.innerText = "Login successful!";
+          window.location.href = "dashboard.html";
+        })
+        .catch(err => {
+          message.style.color = "red";
+          message.innerText = err.message;
+        });
+    }
 
     document.getElementById('signup').addEventListener('click', () => {
       const email = emailField.value;
@@ -44,10 +150,12 @@
 
       createUserWithEmailAndPassword(auth, email, password)
         .then(() => {
-          message.innerText = "Sign up successful! Logging in...";
+          message.style.color = "green";
+          message.innerText = "Sign up successful! Redirecting...";
           window.location.href = "dashboard.html";
         })
         .catch(err => {
+          message.style.color = "red";
           message.innerText = err.message;
         });
     });
@@ -55,13 +163,24 @@
     document.getElementById('login').addEventListener('click', () => {
       const email = emailField.value;
       const password = passwordField.value;
+      loginUser(email, password);
+    });
 
-      signInWithEmailAndPassword(auth, email, password)
+    document.getElementById('forgot').addEventListener('click', () => {
+      const email = emailField.value;
+      if (!email) {
+        message.style.color = "red";
+        message.innerText = "Please enter your email first.";
+        return;
+      }
+
+      sendPasswordResetEmail(auth, email)
         .then(() => {
-          message.innerText = "Login successful!";
-          window.location.href = "dashboard.html";
+          message.style.color = "green";
+          message.innerText = "Password reset email sent!";
         })
         .catch(err => {
+          message.style.color = "red";
           message.innerText = err.message;
         });
     });
