@@ -1,46 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Login</title>
-  <style>
-    body { font-family: Arial; background: #f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;}
-    .login-box { background:white; padding:30px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); width:300px; text-align:center;}
-    input, select, button { width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc;}
-    button { background:#2c3e50; color:white; border:none; cursor:pointer;}
-    button:hover { background:#34495e; }
-    #msg { color:red; }
-  </style>
 </head>
 <body>
-  <div class="login-box">
-    <h2>Login</h2>
-    <input type="text" id="site" placeholder="Site Name">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="msg"></p>
-  </div>
+  <h2>Login / Signup</h2>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxc79IrxXbO5c9IZsD4HtDN3MkJ0K5-wV_0Ybx65k0Yg1ovBsv2kKwzqdUDZMoxfIeE/exec";
+  <input type="email" id="email" placeholder="Email"><br><br>
+  <input type="password" id="password" placeholder="Password"><br><br>
 
-    function login(){
-      const site = document.getElementById("site").value;
-      const password = document.getElementById("password").value;
+  <button id="signup">Sign Up</button>
+  <button id="login">Login</button>
 
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({action:"login", site, password})
-      })
-      .then(r=>r.json())
-      .then(res=>{
-        if(res.success){
-          localStorage.setItem("site", site);
-          window.location.href="dashboard.html";
-        } else {
-          document.getElementById("msg").textContent = "Invalid credentials";
-        }
-      });
-    }
+  <p id="message"></p>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+
+    // ✅ Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+      authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+      projectId: "otp-dashboard-3c17e",
+      storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
+      messagingSenderId: "353305433217",
+      appId: "1:353305433217:web:bcebc8860babaa5e48a980",
+      measurementId: "G-M6JBKWBR7G"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const emailField = document.getElementById('email');
+    const passwordField = document.getElementById('password');
+    const message = document.getElementById('message');
+
+    document.getElementById('signup').addEventListener('click', () => {
+      const email = emailField.value;
+      const password = passwordField.value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          message.innerText = "Sign up successful! Logging in...";
+          window.location.href = "dashboard.html";
+        })
+        .catch(err => {
+          message.innerText = err.message;
+        });
+    });
+
+    document.getElementById('login').addEventListener('click', () => {
+      const email = emailField.value;
+      const password = passwordField.value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          message.innerText = "Login successful!";
+          window.location.href = "dashboard.html";
+        })
+        .catch(err => {
+          message.innerText = err.message;
+        });
+    });
   </script>
 </body>
 </html>
