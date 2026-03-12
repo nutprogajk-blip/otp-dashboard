@@ -1,189 +1,163 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+<title>OTP Dashboard Login</title>
 
-    .login-container {
-      background-color: #fff;
-      padding: 40px 50px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 300px;
-    }
+<style>
 
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
+body{
+font-family: Arial;
+background:#f0f2f5;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
 
-    input[type="email"], input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
+.login-card{
+background:white;
+padding:30px;
+width:300px;
+border-radius:8px;
+box-shadow:0 2px 10px rgba(0,0,0,0.2);
+text-align:center;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      background-color: #1976d2;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:4px;
+}
 
-    button:hover {
-      background-color: #0f5bb5;
-    }
+button{
+width:100%;
+padding:10px;
+background:#2c7be5;
+color:white;
+border:none;
+border-radius:4px;
+cursor:pointer;
+}
 
-    #forgot {
-      display: block;
-      margin-top: 10px;
-      color: #1976d2;
-      cursor: pointer;
-      font-size: 14px;
-      text-decoration: underline;
-    }
+button:hover{
+background:#1a68d1;
+}
 
-    #remember-container {
-      margin-top: 10px;
-      text-align: left;
-      font-size: 14px;
-    }
+a{
+font-size:14px;
+color:#2c7be5;
+text-decoration:none;
+}
 
-    #message {
-      margin-top: 15px;
-      color: red;
-      font-size: 14px;
-    }
-  </style>
+</style>
+
 </head>
+
 <body>
-  <div class="login-container">
-    <h2>Login / Signup</h2>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+<div class="login-card">
 
-    <div id="remember-container">
-      <input type="checkbox" id="remember"> Remember Me
-    </div>
+<h2>OTP Dashboard</h2>
 
-    <button id="signup">Sign Up</button>
-    <button id="login">Login</button>
+<input id="email" type="email" placeholder="Email">
 
-    <span id="forgot">Forgot Password?</span>
+<input id="password" type="password" placeholder="Password">
 
-    <p id="message"></p>
-  </div>
+<button id="loginBtn">Login</button>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, browserLocalPersistence, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+<p style="margin-top:10px;">
+<a href="#" id="resetPassword">Change Password</a>
+</p>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
-      authDomain: "otp-dashboard-3c17e.firebaseapp.com",
-      projectId: "otp-dashboard-3c17e",
-      storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
-      messagingSenderId: "353305433217",
-      appId: "1:353305433217:web:bcebc8860babaa5e48a980",
-      measurementId: "G-M6JBKWBR7G"
-    };
+</div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
 
-    const emailField = document.getElementById('email');
-    const passwordField = document.getElementById('password');
-    const rememberCheckbox = document.getElementById('remember');
-    const message = document.getElementById('message');
+<script type="module">
 
-    // Redirect if already logged in
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        window.location.href = "dashboard.html";
-      }
-    });
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    function loginUser(email, password) {
-      const persistence = rememberCheckbox.checked ? browserLocalPersistence : browserSessionPersistence;
+import {
+getAuth,
+signInWithEmailAndPassword,
+sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-      setPersistence(auth, persistence)
-        .then(() => {
-          return signInWithEmailAndPassword(auth, email, password);
-        })
-        .then(() => {
-          message.style.color = "green";
-          message.innerText = "Login successful!";
-          window.location.href = "dashboard.html";
-        })
-        .catch(err => {
-          message.style.color = "red";
-          message.innerText = err.message;
-        });
-    }
 
-    document.getElementById('signup').addEventListener('click', () => {
-      const email = emailField.value;
-      const password = passwordField.value;
+const firebaseConfig = {
 
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          message.style.color = "green";
-          message.innerText = "Sign up successful! Redirecting...";
-          window.location.href = "dashboard.html";
-        })
-        .catch(err => {
-          message.style.color = "red";
-          message.innerText = err.message;
-        });
-    });
+apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+projectId: "otp-dashboard-3c17e",
+storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
+messagingSenderId: "353305433217",
+appId: "1:353305433217:web:bcebc8860babaa5e48a980",
+measurementId: "G-M6JBKWBR7G"
 
-    document.getElementById('login').addEventListener('click', () => {
-      const email = emailField.value;
-      const password = passwordField.value;
-      loginUser(email, password);
-    });
+};
 
-    document.getElementById('forgot').addEventListener('click', () => {
-      const email = emailField.value;
-      if (!email) {
-        message.style.color = "red";
-        message.innerText = "Please enter your email first.";
-        return;
-      }
 
-      sendPasswordResetEmail(auth, email)
-        .then(() => {
-          message.style.color = "green";
-          message.innerText = "Password reset email sent!";
-        })
-        .catch(err => {
-          message.style.color = "red";
-          message.innerText = err.message;
-        });
-    });
-  </script>
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+
+
+document.getElementById("loginBtn").addEventListener("click", function(){
+
+const email = document.getElementById("email").value;
+
+const password = document.getElementById("password").value;
+
+signInWithEmailAndPassword(auth, email, password)
+
+.then((userCredential)=>{
+
+window.location.href="dashboard.html";
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+});
+
+
+
+document.getElementById("resetPassword").addEventListener("click", function(){
+
+const email=document.getElementById("email").value;
+
+if(email===""){
+
+alert("Enter your email first");
+
+return;
+
+}
+
+sendPasswordResetEmail(auth,email)
+
+.then(()=>{
+
+alert("Password reset email sent");
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+});
+
+
+</script>
+
 </body>
 </html>
