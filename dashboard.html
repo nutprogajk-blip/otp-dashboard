@@ -2,36 +2,26 @@
 <html>
 
 <head>
-
-<title>OTP Dashboard</title>
+<title>Change Password</title>
 
 <style>
 
 body{
-font-family: Arial;
+font-family:Arial;
 background:#f4f6f9;
-margin:0;
-}
-
-.topbar{
-background:#2c7be5;
-color:white;
-padding:15px;
 display:flex;
-justify-content:space-between;
+justify-content:center;
 align-items:center;
-}
-
-.container{
-padding:30px;
+height:100vh;
 }
 
 .card{
 background:white;
-padding:20px;
-border-radius:6px;
+padding:30px;
 width:320px;
+border-radius:8px;
 box-shadow:0 2px 10px rgba(0,0,0,0.2);
+text-align:center;
 }
 
 input{
@@ -43,47 +33,27 @@ border-radius:4px;
 }
 
 button{
+width:100%;
 padding:10px;
+margin-top:10px;
 background:#2c7be5;
 color:white;
 border:none;
 border-radius:4px;
 cursor:pointer;
-width:100%;
-margin-top:10px;
-}
-
-button:hover{
-background:#1a68d1;
-}
-
-.logout{
-background:#e74c3c;
-width:auto;
-padding:8px 15px;
 }
 
 </style>
-
 </head>
 
 
 <body>
 
-<div class="topbar">
-
-<div>OTP Dashboard</div>
-
-<button class="logout" id="logoutBtn">Logout</button>
-
-</div>
-
-
-<div class="container">
-
 <div class="card">
 
 <h3>Change Password</h3>
+
+<input id="username" placeholder="Username">
 
 <input id="oldPassword" type="password" placeholder="Old Password">
 
@@ -91,9 +61,7 @@ padding:8px 15px;
 
 <input id="confirmPassword" type="password" placeholder="Confirm New Password">
 
-<button id="changePasswordBtn">Update Password</button>
-
-</div>
+<button id="updateBtn">Update Password</button>
 
 </div>
 
@@ -105,10 +73,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
 getAuth,
-onAuthStateChanged,
-signOut,
-EmailAuthProvider,
-reauthenticateWithCredential,
+signInWithEmailAndPassword,
 updatePassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -127,73 +92,40 @@ measurementId: "G-M6JBKWBR7G"
 
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 
 
+document.getElementById("updateBtn").addEventListener("click",async function(){
 
-/* LOGIN PROTECTION */
+const username=document.getElementById("username").value.trim();
+const oldPassword=document.getElementById("oldPassword").value;
+const newPassword=document.getElementById("newPassword").value;
+const confirm=document.getElementById("confirmPassword").value;
 
-onAuthStateChanged(auth,(user)=>{
+if(newPassword!==confirm){
 
-if(!user){
-
-window.location.href="index.html";
-
-}
-
-});
-
-
-
-/* LOGOUT */
-
-document.getElementById("logoutBtn").addEventListener("click", function(){
-
-signOut(auth).then(()=>{
-
-window.location.href="index.html";
-
-});
-
-});
-
-
-
-/* CHANGE PASSWORD */
-
-document.getElementById("changePasswordBtn").addEventListener("click", async function(){
-
-const user = auth.currentUser;
-
-const oldPassword = document.getElementById("oldPassword").value;
-const newPassword = document.getElementById("newPassword").value;
-const confirmPassword = document.getElementById("confirmPassword").value;
-
-if(newPassword !== confirmPassword){
-
-alert("New passwords do not match");
+alert("Passwords do not match");
 return;
 
 }
 
-const credential = EmailAuthProvider.credential(user.email, oldPassword);
+const email=username+"@otpajk.com";
 
 try{
 
-await reauthenticateWithCredential(user, credential);
+const userCredential=await signInWithEmailAndPassword(auth,email,oldPassword);
 
-await updatePassword(user, newPassword);
+await updatePassword(userCredential.user,newPassword);
 
-alert("Password updated successfully");
+alert("Password updated");
 
-document.getElementById("oldPassword").value="";
-document.getElementById("newPassword").value="";
-document.getElementById("confirmPassword").value="";
+window.location.href="index.html";
 
-}catch(error){
+}
 
-alert("Old password incorrect");
+catch{
+
+alert("Incorrect username or password");
 
 }
 
@@ -201,7 +133,5 @@ alert("Old password incorrect");
 
 </script>
 
-
 </body>
-
 </html>
