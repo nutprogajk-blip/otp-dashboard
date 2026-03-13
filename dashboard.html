@@ -2,69 +2,53 @@
 <html>
 
 <head>
-<title>Change Password</title>
+<title>Admin Dashboard</title>
 
 <style>
 
 body{
 font-family:Arial;
+margin:0;
 background:#f4f6f9;
+}
+
+.topbar{
+background:#2c7be5;
+color:white;
+padding:15px;
 display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.card{
-background:white;
-padding:30px;
-width:320px;
-border-radius:8px;
-box-shadow:0 2px 10px rgba(0,0,0,0.2);
-text-align:center;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:8px 0;
-border:1px solid #ccc;
-border-radius:4px;
+justify-content:space-between;
 }
 
 button{
-width:100%;
-padding:10px;
-margin-top:10px;
-background:#2c7be5;
-color:white;
+background:#e74c3c;
 border:none;
-border-radius:4px;
+color:white;
+padding:8px 15px;
 cursor:pointer;
+border-radius:4px;
 }
 
 </style>
+
 </head>
 
 
 <body>
 
-<div class="card">
+<div class="topbar">
 
-<h3>Change Password</h3>
+<div>OTP Dashboard</div>
 
-<input id="username" placeholder="Username">
-
-<input id="oldPassword" type="password" placeholder="Old Password">
-
-<input id="newPassword" type="password" placeholder="New Password">
-
-<input id="confirmPassword" type="password" placeholder="Confirm New Password">
-
-<button id="updateBtn">Update Password</button>
+<button id="logoutBtn">Logout</button>
 
 </div>
 
+<div style="padding:30px">
+
+<h2>Welcome to OTP Monitoring System</h2>
+
+</div>
 
 
 <script type="module">
@@ -73,8 +57,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
 getAuth,
-signInWithEmailAndPassword,
-updatePassword
+onAuthStateChanged,
+signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
@@ -95,39 +79,24 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 
-document.getElementById("updateBtn").addEventListener("click",async function(){
+onAuthStateChanged(auth,(user)=>{
 
-const username=document.getElementById("username").value.trim();
-const oldPassword=document.getElementById("oldPassword").value;
-const newPassword=document.getElementById("newPassword").value;
-const confirm=document.getElementById("confirmPassword").value;
-
-if(newPassword!==confirm){
-
-alert("Passwords do not match");
-return;
-
-}
-
-const email=username+"@otpajk.com";
-
-try{
-
-const userCredential=await signInWithEmailAndPassword(auth,email,oldPassword);
-
-await updatePassword(userCredential.user,newPassword);
-
-alert("Password updated");
+if(!user){
 
 window.location.href="index.html";
 
 }
 
-catch{
+});
 
-alert("Incorrect username or password");
 
-}
+document.getElementById("logoutBtn").addEventListener("click",function(){
+
+signOut(auth).then(()=>{
+
+window.location.href="index.html";
+
+});
 
 });
 
