@@ -7,7 +7,7 @@
 <style>
 
 body{
-font-family: Arial;
+font-family:Arial;
 background:#f0f2f5;
 display:flex;
 justify-content:center;
@@ -36,31 +36,29 @@ border-radius:4px;
 position:relative;
 }
 
-.eye-icon{
+.eye{
 position:absolute;
 right:10px;
 top:12px;
 cursor:pointer;
-font-size:16px;
 }
 
 button{
 width:100%;
 padding:10px;
+margin-top:10px;
 background:#2c7be5;
 color:white;
 border:none;
 border-radius:4px;
 cursor:pointer;
-margin-top:10px;
 }
 
-button:hover{
-background:#1a68d1;
+.changeBtn{
+background:#6c757d;
 }
 
 </style>
-
 </head>
 
 
@@ -70,14 +68,18 @@ background:#1a68d1;
 
 <h2>OTP Dashboard</h2>
 
-<input id="username" type="text" placeholder="Username" autocomplete="off">
+<input id="username" placeholder="Username">
 
 <div class="password-box">
-<input id="password" type="password" placeholder="Password" autocomplete="new-password">
-<span class="eye-icon" onclick="togglePassword()">👁</span>
+<input id="password" type="password" placeholder="Password">
+<span class="eye" onclick="togglePassword()">👁</span>
 </div>
 
 <button id="loginBtn">Login</button>
+
+<button class="changeBtn" onclick="window.location='change.html'">
+Change Password
+</button>
 
 </div>
 
@@ -91,7 +93,6 @@ import {
 getAuth,
 signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
 
 
 const firebaseConfig = {
@@ -108,35 +109,25 @@ measurementId: "G-M6JBKWBR7G"
 
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 
 
+document.getElementById("loginBtn").addEventListener("click",function(){
 
-document.getElementById("loginBtn").addEventListener("click", function(){
+const username=document.getElementById("username").value.trim();
+const password=document.getElementById("password").value;
 
-const username = document.getElementById("username").value.trim();
-
-const password = document.getElementById("password").value;
-
-if(username==="" || password===""){
-alert("Enter username and password");
-return;
-}
-
-
-const email = username + "@otpajk.com";
-
+const email=username+"@otpajk.com";
 
 signInWithEmailAndPassword(auth,email,password)
 
-.then((userCredential)=>{
+.then(()=>{
 
 window.location.href="dashboard.html";
 
 })
 
-.catch((error)=>{
+.catch(()=>{
 
 alert("Invalid username or password");
 
@@ -145,21 +136,15 @@ alert("Invalid username or password");
 });
 
 
-window.togglePassword = function(){
+window.togglePassword=function(){
 
-const pass = document.getElementById("password");
+const p=document.getElementById("password");
 
-if(pass.type==="password"){
-pass.type="text";
-}
-else{
-pass.type="password";
-}
+p.type=p.type==="password"?"text":"password";
 
 }
 
 </script>
-
 
 </body>
 </html>
