@@ -1,100 +1,207 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
 
-    .dashboard-container {
-      background-color: #fff;
-      padding: 30px 40px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      text-align: center;
-    }
+<title>OTP Dashboard</title>
 
-    h2 {
-      margin-bottom: 10px;
-      color: #333;
-    }
+<style>
 
-    p {
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #555;
-    }
+body{
+font-family: Arial;
+background:#f4f6f9;
+margin:0;
+}
 
-    button {
-      padding: 10px 20px;
-      background-color: #1976d2;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
+.topbar{
+background:#2c7be5;
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
 
-    button:hover {
-      background-color: #0f5bb5;
-    }
-  </style>
+.container{
+padding:30px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:6px;
+width:320px;
+box-shadow:0 2px 10px rgba(0,0,0,0.2);
+}
+
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:4px;
+}
+
+button{
+padding:10px;
+background:#2c7be5;
+color:white;
+border:none;
+border-radius:4px;
+cursor:pointer;
+width:100%;
+margin-top:10px;
+}
+
+button:hover{
+background:#1a68d1;
+}
+
+.logout{
+background:#e74c3c;
+width:auto;
+padding:8px 15px;
+}
+
+</style>
+
 </head>
+
+
 <body>
-  <div class="dashboard-container">
-    <h2>Welcome to Dashboard</h2>
-    <p id="userEmail"></p>
-    <button id="logout">Logout</button>
-  </div>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+<div class="topbar">
 
-    // ✅ Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
-      authDomain: "otp-dashboard-3c17e.firebaseapp.com",
-      projectId: "otp-dashboard-3c17e",
-      storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
-      messagingSenderId: "353305433217",
-      appId: "1:353305433217:web:bcebc8860babaa5e48a980",
-      measurementId: "G-M6JBKWBR7G"
-    };
+<div>OTP Dashboard</div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+<button class="logout" id="logoutBtn">Logout</button>
 
-    const userEmail = document.getElementById('userEmail');
-    const logoutBtn = document.getElementById('logout');
+</div>
 
-    // Check if user is logged in
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        userEmail.innerText = "Logged in as: " + user.email;
-      } else {
-        // Not logged in, redirect to login
-        window.location.href = "index.html";
-      }
-    });
 
-    // Logout
-    logoutBtn.addEventListener('click', () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
-    });
-  </script>
+<div class="container">
+
+<div class="card">
+
+<h3>Change Password</h3>
+
+<input id="oldPassword" type="password" placeholder="Old Password">
+
+<input id="newPassword" type="password" placeholder="New Password">
+
+<input id="confirmPassword" type="password" placeholder="Confirm New Password">
+
+<button id="changePasswordBtn">Update Password</button>
+
+</div>
+
+</div>
+
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getAuth,
+onAuthStateChanged,
+signOut,
+EmailAuthProvider,
+reauthenticateWithCredential,
+updatePassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+projectId: "otp-dashboard-3c17e",
+storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
+messagingSenderId: "353305433217",
+appId: "1:353305433217:web:bcebc8860babaa5e48a980",
+measurementId: "G-M6JBKWBR7G"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+
+
+/* LOGIN PROTECTION */
+
+onAuthStateChanged(auth,(user)=>{
+
+if(!user){
+
+window.location.href="index.html";
+
+}
+
+});
+
+
+
+/* LOGOUT */
+
+document.getElementById("logoutBtn").addEventListener("click", function(){
+
+signOut(auth).then(()=>{
+
+window.location.href="index.html";
+
+});
+
+});
+
+
+
+/* CHANGE PASSWORD */
+
+document.getElementById("changePasswordBtn").addEventListener("click", async function(){
+
+const user = auth.currentUser;
+
+const oldPassword = document.getElementById("oldPassword").value;
+const newPassword = document.getElementById("newPassword").value;
+const confirmPassword = document.getElementById("confirmPassword").value;
+
+if(newPassword !== confirmPassword){
+
+alert("New passwords do not match");
+return;
+
+}
+
+const credential = EmailAuthProvider.credential(user.email, oldPassword);
+
+try{
+
+await reauthenticateWithCredential(user, credential);
+
+await updatePassword(user, newPassword);
+
+alert("Password updated successfully");
+
+document.getElementById("oldPassword").value="";
+document.getElementById("newPassword").value="";
+document.getElementById("confirmPassword").value="";
+
+}catch(error){
+
+alert("Old password incorrect");
+
+}
+
+});
+
+</script>
+
+
 </body>
+
 </html>
