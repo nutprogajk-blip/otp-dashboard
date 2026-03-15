@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>User Management</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+text-align:center;
+}
+
+.container{
+width:80%;
+margin:auto;
+background:white;
+padding:20px;
+margin-top:30px;
+border-radius:8px;
+}
+
+input,select{
+padding:10px;
+margin:8px;
+width:250px;
+}
+
+button{
+padding:10px 20px;
+background:#2c3e50;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#34495e;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Admin User Management</h2>
+
+<h3>Create User</h3>
+
+<input id="email" placeholder="User Email"><br>
+
+<input id="password" type="password" placeholder="Password"><br>
+
+<select id="dashboard">
+
+<option value="">Select Dashboard</option>
+
+<option value="admin-dashboard.html">Admin Dashboard</option>
+
+<option value="state-dashboard.html">State Dashboard</option>
+
+<option value="district.html?district=bagh">Bagh District</option>
+<option value="district.html?district=haveli">Haveli District</option>
+<option value="district.html?district=poonch">Poonch District</option>
+<option value="district.html?district=sudhnoti">Sudhnoti District</option>
+<option value="district.html?district=muzaffarabad">Muzaffarabad District</option>
+<option value="district.html?district=neelum">Neelum District</option>
+<option value="district.html?district=jhelumvalley">Jhelum Valley District</option>
+<option value="district.html?district=kotli">Kotli District</option>
+<option value="district.html?district=mirpur">Mirpur District</option>
+<option value="district.html?district=bhimber">Bhimber District</option>
+
+<option value="entry-district.html?district=bagh">Entry Bagh</option>
+<option value="entry-district.html?district=haveli">Entry Haveli</option>
+<option value="entry-district.html?district=poonch">Entry Poonch</option>
+<option value="entry-district.html?district=sudhnoti">Entry Sudhnoti</option>
+<option value="entry-district.html?district=muzaffarabad">Entry Muzaffarabad</option>
+<option value="entry-district.html?district=neelum">Entry Neelum</option>
+<option value="entry-district.html?district=jhelumvalley">Entry Jhelum Valley</option>
+<option value="entry-district.html?district=kotli">Entry Kotli</option>
+<option value="entry-district.html?district=mirpur">Entry Mirpur</option>
+<option value="entry-district.html?district=bhimber">Entry Bhimber</option>
+
+</select>
+
+<br><br>
+
+<button onclick="createUser()">Create User</button>
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+setDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+projectId: "otp-dashboard-3c17e",
+storageBucket: "otp-dashboard-3c17e.appspot.com",
+messagingSenderId: "353305433217",
+appId: "1:353305433217:web:bcebc8860babaa5e48a980"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const db = getFirestore(app);
+
+
+window.createUser = async function(){
+
+const email=document.getElementById("email").value;
+
+const password=document.getElementById("password").value;
+
+const dashboard=document.getElementById("dashboard").value;
+
+
+try{
+
+const userCredential =
+await createUserWithEmailAndPassword(auth,email,password);
+
+const uid=userCredential.user.uid;
+
+await setDoc(doc(db,"users",uid),{
+
+email:email,
+dashboard:dashboard
+
+});
+
+alert("User created successfully");
+
+}catch(error){
+
+alert(error.message);
+
+}
+
+};
+
+</script>
+
+</body>
+</html>
