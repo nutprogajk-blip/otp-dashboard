@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>District Data Entry</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+}
+
+.container{
+width:80%;
+margin:auto;
+background:white;
+padding:20px;
+margin-top:30px;
+}
+
+input{
+padding:8px;
+margin:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 id="title"></h1>
+
+<form>
+
+<input placeholder="Month"><br>
+<input placeholder="Total OTP Reports"><br>
+<input placeholder="Total SAM Cases"><br>
+
+<button type="submit">Submit</button>
+
+</form>
+
+</div>
+
+<script>
+
+const params=new URLSearchParams(window.location.search);
+const district=params.get("district");
+
+document.getElementById("title").innerText=
+district.toUpperCase()+" District Data Entry";
+
+</script>
+
+</body>
+</html>
