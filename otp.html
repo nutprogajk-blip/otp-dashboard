@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>OTP Dashboard</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+text-align:center;
+}
+
+.container{
+width:80%;
+margin:auto;
+background:white;
+padding:20px;
+margin-top:30px;
+}
+
+a{
+display:block;
+padding:10px;
+margin:10px;
+background:#8e44ad;
+color:white;
+text-decoration:none;
+border-radius:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 id="otpTitle"></h1>
+
+<a id="entryLink">OTP Data Entry</a>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const district=params.get("district");
+const otp=params.get("otp");
+
+document.getElementById("otpTitle").innerText =
+"OTP "+otp+" Dashboard";
+
+document.getElementById("entryLink").href =
+"entry-otp.html?district="+district+"&otp="+otp;
+
+</script>
+
+</body>
+</html>
