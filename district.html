@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>District Dashboard</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+text-align:center;
+}
+
+.container{
+width:80%;
+margin:auto;
+background:white;
+padding:20px;
+margin-top:30px;
+}
+
+a{
+display:block;
+padding:10px;
+margin:10px;
+background:#27ae60;
+color:white;
+text-decoration:none;
+border-radius:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 id="districtName"></h1>
+
+<div id="otpList"></div>
+
+<a id="entryLink">District Data Entry</a>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const district = params.get("district");
+
+document.getElementById("districtName").innerText =
+district.toUpperCase()+" District Dashboard";
+
+const otpData = {
+
+bagh:["Birpani","Rerra","Sessor","HQ Bagh"],
+
+haveli:["Gugdar","Bhedi","HQ Haveli"],
+
+poonch:["Tain","Khailgalla","Alisojal","HQ RWKT"],
+
+sudhnoti:["Mung","TrarKhal","HQ Plandari"],
+
+muzaffarabad:["Garhi Dopatta","Danna","HQ Mzd"],
+
+neelum:["Mirpura","Janawai","HQ Authmuqam"],
+
+jhelumvalley:["Chanarri","Chakotti","Lamnian","HQ Hattian"],
+
+kotli:["HQ Kotli"],
+
+mirpur:["HQ Mirpur"],
+
+bhimber:["HQ Bhimber"]
+
+};
+
+const container = document.getElementById("otpList");
+
+otpData[district].forEach(function(otp){
+
+const link=document.createElement("a");
+
+link.href="otp.html?district="+district+"&otp="+otp;
+
+link.innerText="OTP "+otp;
+
+container.appendChild(link);
+
+});
+
+document.getElementById("entryLink").href=
+"entry-district.html?district="+district;
+
+</script>
+
+</body>
+</html>
