@@ -110,9 +110,22 @@ await signInWithEmailAndPassword(auth,email,password);
 
 const uid=userCredential.user.uid;
 
+
+// ADMIN BYPASS
+
+if(email==="admin@otpajk.com"){
+
+window.location.href="admin-dashboard.html";
+
+return;
+
+}
+
+
 const docRef=doc(db,"users",uid);
 
 const docSnap=await getDoc(docRef);
+
 
 if(docSnap.exists()){
 
@@ -122,9 +135,10 @@ window.location.href=data.dashboard;
 
 }else{
 
-alert("No dashboard assigned to this user");
+alert("No dashboard assigned. Contact admin.");
 
 }
+
 
 }catch(error){
 
