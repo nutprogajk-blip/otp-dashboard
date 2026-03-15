@@ -1,122 +1,65 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 <title>Admin Dashboard</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#f4f6f9;
-margin:0;
-}
-
-.topbar{
-background:#2c7be5;
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-}
-
-.container{
-padding:30px;
-}
-
-.section{
-margin-bottom:40px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,220px);
-gap:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:8px;
-box-shadow:0 2px 10px rgba(0,0,0,0.2);
+background:#f4f4f4;
 text-align:center;
 }
 
-.card a{
+.container{
+width:80%;
+margin:auto;
+background:white;
+padding:20px;
+margin-top:30px;
+border-radius:8px;
+box-shadow:0 0 10px #ccc;
+}
+
+a{
+display:block;
+padding:12px;
+margin:10px;
+background:#2c3e50;
+color:white;
 text-decoration:none;
-color:#2c7be5;
-font-weight:bold;
+border-radius:5px;
+}
+
+a:hover{
+background:#34495e;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="topbar">
-
-<div>AJK Nutrition Program – Admin Dashboard</div>
-
-<a href="index.html">Logout</a>
-
-</div>
-
 <div class="container">
 
-<div class="section">
+<h1>Admin Dashboard</h1>
 
-<h2>Monitoring Dashboards</h2>
+<a href="state-dashboard.html">State Monitoring Dashboard</a>
 
-<div class="grid">
+<h2>District Dashboards</h2>
 
-<div class="card">
-<a href="state-dashboard.html">State Monitoring</a>
-</div>
-
-<div class="card">
-<a href="districts/district-bagh.html">District Monitoring</a>
-</div>
-
-</div>
-
-</div>
-
-<div class="section">
-
-<h2>Data Entry Dashboards</h2>
-
-<div class="grid">
-
-<div class="card">
-<a href="entry/entry-district-bagh.html">District Data Entry</a>
-</div>
-
-</div>
-
-</div>
-
-<div class="section">
-
-<h2>Administration</h2>
-
-<div class="grid">
-
-<div class="card">
-<a href="#">User Management</a>
-</div>
-
-<div class="card">
-<a href="change-password.html">Change Password</a>
-</div>
-
-</div>
-
-</div>
+<a href="district.html?district=bagh">Bagh</a>
+<a href="district.html?district=haveli">Haveli</a>
+<a href="district.html?district=poonch">Poonch</a>
+<a href="district.html?district=sudhnoti">Sudhnoti</a>
+<a href="district.html?district=muzaffarabad">Muzaffarabad</a>
+<a href="district.html?district=neelum">Neelum</a>
+<a href="district.html?district=jhelumvalley">Jhelum Valley</a>
+<a href="district.html?district=kotli">Kotli</a>
+<a href="district.html?district=mirpur">Mirpur</a>
+<a href="district.html?district=bhimber">Bhimber</a>
 
 </div>
 
 </body>
-
 </html>
