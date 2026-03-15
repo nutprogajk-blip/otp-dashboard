@@ -1,58 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>District Data Entry</title>
+<title>District Dashboard</title>
 
 <style>
-
 body{
-font-family:Arial;
-text-align:center;
-background:#f4f4f4;
+    font-family:Arial;
+    text-align:center;
+    background:#f4f4f4;
 }
 
 .container{
-width:80%;
-margin:auto;
-background:white;
-padding:20px;
-margin-top:30px;
+    width:80%;
+    margin:auto;
+    background:white;
+    padding:20px;
+    margin-top:30px;
+    border-radius:8px;
 }
 
-input{
-padding:8px;
-margin:5px;
+a{
+    display:block;
+    padding:10px;
+    margin:8px;
+    background:#27ae60;
+    color:white;
+    text-decoration:none;
+    border-radius:5px;
 }
 
+a.monitoring{
+    background:#2980b9;
+}
+
+a.entry{
+    background:#8e44ad;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
 <h1 id="title"></h1>
 
-<form>
-
-<input placeholder="Month"><br>
-<input placeholder="Total OTP Reports"><br>
-<input placeholder="Total SAM Cases"><br>
-
-<button type="submit">Submit</button>
-
-</form>
-
+<div id="otpLinks"></div>
 </div>
 
 <script>
+const params = new URLSearchParams(window.location.search);
+const district = params.get("district");
 
-const params=new URLSearchParams(window.location.search);
-const district=params.get("district");
+document.getElementById("title").innerText = district.toUpperCase() + " District Dashboard";
 
-document.getElementById("title").innerText=
-district.toUpperCase()+" District Data Entry";
+// OTP list mapping (same as in district.html)
+const otpData = {
+    bagh:["Birpani","Rerra","Sessor","HQ Bagh"],
+    haveli:["Gugdar","Bhedi","HQ Haveli"],
+    poonch:["Tain","Khailgalla","Alisojal","HQ RWKT"],
+    sudhnoti:["Mung","TrarKhal","HQ Plandari"],
+    muzaffarabad:["Garhi Dopatta","Danna","HQ Mzd"],
+    neelum:["Mirpura","Janawai","HQ Authmuqam"],
+    jhelumvalley:["Chanarri","Chakotti","Lamnian","HQ Hattian"],
+    kotli:["HQ Kotli"],
+    mirpur:["HQ Mirpur"],
+    bhimber:["HQ Bhimber"]
+};
 
+const container = document.getElementById("otpLinks");
+
+otpData[district].forEach(function(otp){
+    // Monitoring link
+    const monitoringLink = document.createElement("a");
+    monitoringLink.href = "otp.html?district=" + district + "&otp=" + otp;
+    monitoringLink.innerText = "OTP " + otp + " Monitoring";
+    monitoringLink.classList.add("monitoring");
+    container.appendChild(monitoringLink);
+
+    // Entry link
+    const entryLink = document.createElement("a");
+    entryLink.href = "entry-otp.html?district=" + district + "&otp=" + otp;
+    entryLink.innerText = "OTP " + otp + " Data Entry";
+    entryLink.classList.add("entry");
+    container.appendChild(entryLink);
+});
 </script>
 
 </body>
