@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SAM Registration</title>
+</head>
+<body>
+
+<h2>SAM Child Registration</h2>
+
+<!-- BASIC INFO -->
+<input id="name" placeholder="Child Name"><br><br>
+<input id="father" placeholder="Father Name"><br><br>
+<input id="age" placeholder="Age (months)"><br><br>
+
+<select id="gender">
+  <option value="">Select Gender</option>
+  <option>Male</option>
+  <option>Female</option>
+</select><br><br>
+
+<!-- ADMISSION -->
+<h3>Admission Details</h3>
+
+<input id="muac" placeholder="MUAC (cm)"><br><br>
+<input id="weight" placeholder="Weight (kg)"><br><br>
+<input id="height" placeholder="Height (cm)"><br><br>
+
+<select id="edema">
+  <option value="">Edema</option>
+  <option>Yes</option>
+  <option>No</option>
+</select><br><br>
+
+<select id="appetite">
+  <option value="">Appetite Test</option>
+  <option>Pass</option>
+  <option>Fail</option>
+</select><br><br>
+
+<input type="date" id="date"><br><br>
+
+<button onclick="save()">Register Child</button>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+<script>
+// 🔐 Firebase Config (PUT YOUR REAL VALUES)
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  projectId: "YOUR_PROJECT"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// 🔐 Get Logged-in User
+function getUser() {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    alert("Please login first");
+    location = "index.html";
+    return null;
+  }
+  return JSON.parse(user);
+}
+
+// 🔢 Generate SAM ID
+async function generateSAMId(district, otp) {
+
+  const dCode = district.substring(0,3).toUpperCase();
+  const oCode = otp.substring(0,3).toUpperCase();
+
+  const counterId = `SAM-${dCode}-${oCode}`;
+  const ref = db.collection("counters").doc(counterId);
+
+  const doc = await ref.get();
+
+  let current = 0;
+  if (doc.exists) current = doc.data().current_number;
+
+  const next = current + 1;
+
+  await ref.set({ current_number: next }, { merge: true });
+
+  return `${dCode}-${oCode}-${String(next).padStart(4,"0")}`;
+}
+
+// 💾 Save Child
+async function save() {
+
+  const user = getUser();
+  if (!user) return;
+
+  // Basic validation
+  if (!name.value || !age.value || !gender.value) {
+    return alert("Please fill required fields");
+  }
+
+  const sam_id = await generateSAMId(user.district, user.otp);
+
+  const data = {
+    sam_id: sam_id,
+
+    name: name.value,
+    father: father.value,
+    age: age.value,
+    gender: gender.value,
+
+    district: user.district,
+    otp: user.otp,
+
+    admission: {
+      muac: muac.value,
+      weight: weight.value,
+      height: height.value,
+      edema: edema.value,
+      appetite: appetite.value,
+      date: date.value
+    },
+
+    status: "active",
+    createdAt: new Date()
+  };
+
+  await db.collection("otp_children").add(data);
+
+  alert("Child Registered with ID: " + sam_id);
+
+  // Reset form
+  document.querySelectorAll("input").forEach(i => i.value = "");
+}
+</script>
+
+</body>
+</html>
