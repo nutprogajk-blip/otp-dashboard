@@ -2,42 +2,106 @@
 <html>
 <head>
   <title>SAM Registration</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 500px;
+      margin: auto;
+      padding: 10px;
+    }
+
+    h2, h3 {
+      text-align: center;
+    }
+
+    .section {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: green;
+      color: white;
+      border: none;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+
+    .error {
+      color: red;
+      font-size: 12px;
+    }
+  </style>
 </head>
+
 <body>
 
 <h2>SAM Child Registration</h2>
 
 <!-- BASIC INFO -->
-<input id="name" placeholder="Child Name"><br><br>
-<input id="father" placeholder="Father Name"><br><br>
-<input id="age" placeholder="Age (months)"><br><br>
+<div class="section">
+  <h3>Basic Information</h3>
 
-<select id="gender">
-  <option value="">Select Gender</option>
-  <option>Male</option>
-  <option>Female</option>
-</select><br><br>
+  <input id="name" placeholder="Child Name *">
+  <div id="err_name" class="error"></div>
+
+  <input id="father" placeholder="Father Name">
+
+  <input id="age" type="number" placeholder="Age (months) *">
+  <div id="err_age" class="error"></div>
+
+  <select id="gender">
+    <option value="">Select Gender *</option>
+    <option>Male</option>
+    <option>Female</option>
+  </select>
+  <div id="err_gender" class="error"></div>
+
+  <input id="contact" placeholder="Contact Number">
+  <input id="village" placeholder="Village / Address">
+</div>
 
 <!-- ADMISSION -->
-<h3>Admission Details</h3>
+<div class="section">
+  <h3>Admission Details</h3>
 
-<input id="muac" placeholder="MUAC (cm)"><br><br>
-<input id="weight" placeholder="Weight (kg)"><br><br>
-<input id="height" placeholder="Height (cm)"><br><br>
+  <input id="date" type="date">
+  <div id="err_date" class="error"></div>
 
-<select id="edema">
-  <option value="">Edema</option>
-  <option>Yes</option>
-  <option>No</option>
-</select><br><br>
+  <input id="muac" type="number" step="0.1" placeholder="MUAC (cm) *">
+  <div id="err_muac" class="error"></div>
 
-<select id="appetite">
-  <option value="">Appetite Test</option>
-  <option>Pass</option>
-  <option>Fail</option>
-</select><br><br>
+  <input id="weight" type="number" step="0.1" placeholder="Weight (kg) *">
+  <div id="err_weight" class="error"></div>
 
-<input type="date" id="date"><br><br>
+  <input id="height" type="number" step="0.1" placeholder="Height (cm)">
+
+  <select id="edema">
+    <option value="">Edema *</option>
+    <option>Yes</option>
+    <option>No</option>
+  </select>
+  <div id="err_edema" class="error"></div>
+
+  <select id="appetite">
+    <option value="">Appetite Test *</option>
+    <option>Pass</option>
+    <option>Fail</option>
+  </select>
+  <div id="err_appetite" class="error"></div>
+</div>
 
 <button onclick="save()">Register Child</button>
 
@@ -46,7 +110,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <script>
-// 🔐 Firebase Config (PUT YOUR REAL VALUES)
+// Firebase config
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   projectId: "YOUR_PROJECT"
@@ -55,80 +119,87 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 🔐 Get Logged-in User
+// Get user
 function getUser() {
-  const user = localStorage.getItem("user");
-  if (!user) {
-    alert("Please login first");
-    location = "index.html";
-    return null;
-  }
-  return JSON.parse(user);
+  return JSON.parse(localStorage.getItem("user"));
 }
 
-// 🔢 Generate SAM ID
+// Validation
+function validate() {
+
+  let valid = true;
+
+  function setError(id, msg) {
+    document.getElementById(id).innerText = msg;
+    if (msg) valid = false;
+  }
+
+  setError("err_name", name.value ? "" : "Required");
+  setError("err_age", age.value ? "" : "Required");
+  setError("err_gender", gender.value ? "" : "Required");
+  setError("err_date", date.value ? "" : "Required");
+  setError("err_muac", muac.value ? "" : "Required");
+  setError("err_weight", weight.value ? "" : "Required");
+  setError("err_edema", edema.value ? "" : "Required");
+  setError("err_appetite", appetite.value ? "" : "Required");
+
+  return valid;
+}
+
+// Generate ID
 async function generateSAMId(district, otp) {
 
   const dCode = district.substring(0,3).toUpperCase();
   const oCode = otp.substring(0,3).toUpperCase();
 
-  const counterId = `SAM-${dCode}-${oCode}`;
-  const ref = db.collection("counters").doc(counterId);
-
+  const ref = db.collection("counters").doc(`SAM-${dCode}-${oCode}`);
   const doc = await ref.get();
 
-  let current = 0;
-  if (doc.exists) current = doc.data().current_number;
+  let current = doc.exists ? doc.data().current_number : 0;
+  current++;
 
-  const next = current + 1;
+  await ref.set({ current_number: current }, { merge: true });
 
-  await ref.set({ current_number: next }, { merge: true });
-
-  return `${dCode}-${oCode}-${String(next).padStart(4,"0")}`;
+  return `${dCode}-${oCode}-${String(current).padStart(4,"0")}`;
 }
 
-// 💾 Save Child
+// Save
 async function save() {
 
-  const user = getUser();
-  if (!user) return;
+  if (!validate()) return;
 
-  // Basic validation
-  if (!name.value || !age.value || !gender.value) {
-    return alert("Please fill required fields");
-  }
+  const user = getUser();
 
   const sam_id = await generateSAMId(user.district, user.otp);
 
-  const data = {
-    sam_id: sam_id,
+  await db.collection("otp_children").add({
+    sam_id,
 
     name: name.value,
     father: father.value,
     age: age.value,
     gender: gender.value,
+    contact: contact.value,
+    village: village.value,
 
     district: user.district,
     otp: user.otp,
 
     admission: {
+      date: date.value,
       muac: muac.value,
       weight: weight.value,
       height: height.value,
       edema: edema.value,
-      appetite: appetite.value,
-      date: date.value
+      appetite: appetite.value
     },
 
     status: "active",
     createdAt: new Date()
-  };
+  });
 
-  await db.collection("otp_children").add(data);
+  alert("Registered: " + sam_id);
 
-  alert("Child Registered with ID: " + sam_id);
-
-  // Reset form
   document.querySelectorAll("input").forEach(i => i.value = "");
 }
 </script>
