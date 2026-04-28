@@ -1,61 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>OTP Data Entry</title>
+  <title>OTP Data Entry</title>
 
-<style>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
 
-body{
-font-family:Arial;
-text-align:center;
-background:#f4f4f4;
-}
+    h2 {
+      margin-bottom: 30px;
+    }
 
-.container{
-width:80%;
-margin:auto;
-background:white;
-padding:20px;
-margin-top:30px;
-}
+    .btn {
+      display: block;
+      width: 90%;
+      max-width: 400px;
+      margin: 15px auto;
+      padding: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background: #2c7be5;
+      color: white;
+    }
 
-input{
-padding:8px;
-margin:5px;
-}
-
-</style>
+    .btn:active {
+      background: #1a5dc9;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+<h2>OTP Data Entry</h2>
 
-<h1 id="title"></h1>
-
-<form>
-
-<input placeholder="Month"><br>
-<input placeholder="New SAM Admissions"><br>
-<input placeholder="Discharged Cured"><br>
-<input placeholder="Defaulters"><br>
-
-<button type="submit">Submit</button>
-
-</form>
-
-</div>
+<button class="btn" onclick="openModule('sam')">SAM CASES</button>
+<button class="btn" onclick="openModule('mam')">MAM CASES</button>
+<button class="btn" onclick="openModule('plw')">PLWs</button>
+<button class="btn" onclick="openModule('adolescent')">ADOLESCENTS</button>
 
 <script>
+// 🔀 Navigation
+function openModule(type) {
 
-const params=new URLSearchParams(window.location.search);
+  if (type === "sam") {
+    location = "sam-menu.html";
+  }
 
-const district=params.get("district");
-const otp=params.get("otp");
+  if (type === "mam") {
+    location = "mam-menu.html";
+  }
 
-document.getElementById("title").innerText=
-"Data Entry - "+otp;
+  if (type === "plw") {
+    location = "plw-menu.html";
+  }
 
+  if (type === "adolescent") {
+    location = "adolescent-menu.html";
+  }
+}
 </script>
 
 </body>
