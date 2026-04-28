@@ -143,7 +143,7 @@
 </div>
 
 <div id="readmission_box" class="hidden">
-  <select id="readmission_type">
+  <select id="readmission_type" onchange="handleReadmissionOther()">
     <option value="">Readmission Type *</option>
     <option>Admission after relapse</option>
     <option>Admission after default</option>
@@ -187,10 +187,16 @@ function getUser(){
 
 // AGE CALCULATION
 function calcAge(){
+  if (!dob.value || !admission_date.value) return;
+
   const dobVal = new Date(dob.value);
   const admVal = new Date(admission_date.value);
 
-  if (!dobVal || !admVal) return;
+  if (admVal < dobVal) {
+    age.value = "";
+    alert("Admission date cannot be before date of birth");
+    return;
+  }
 
   let months = (admVal.getFullYear() - dobVal.getFullYear()) * 12;
   months += admVal.getMonth() - dobVal.getMonth();
@@ -198,13 +204,21 @@ function calcAge(){
   age.value = months;
 }
 
-// SHOW/HIDE LOGIC
+// SHOW/HIDE
 function handleAdmissionType(){
   new_box.classList.add("hidden");
   readmission_box.classList.add("hidden");
 
   if (admission_type.value === "new") new_box.classList.remove("hidden");
   if (admission_type.value === "readmission") readmission_box.classList.remove("hidden");
+}
+
+function handleReadmissionOther(){
+  if (readmission_type.value === "Other") {
+    readmission_other.classList.remove("hidden");
+  } else {
+    readmission_other.classList.add("hidden");
+  }
 }
 
 function handleComplications(){
@@ -219,8 +233,8 @@ function handleComplications(){
 function validate(){
   let ok = true;
 
-  function err(id,val){
-    document.getElementById(id).innerText = val ? "" : "Required";
+  function err(id,val,msg="Required"){
+    document.getElementById(id).innerText = val ? "" : msg;
     if (!val) ok=false;
   }
 
@@ -241,6 +255,19 @@ function validate(){
   err("e_admission_type",admission_type.value);
   err("e_complications",complications.value);
 
+  // AGE VALIDATION
+  const ageVal = parseInt(age.value);
+  if (ageVal < 6 || ageVal > 59) {
+    document.getElementById("e_dob").innerText = "Age must be between 6–59 months";
+    ok = false;
+  }
+
+  // CONTACT VALIDATION
+  if (!/^\d{11}$/.test(contact.value)) {
+    document.getElementById("e_contact").innerText = "Enter 11 digit number";
+    ok = false;
+  }
+
   if (admission_type.value === "new" && !new_type.value) ok=false;
   if (admission_type.value === "readmission" && !readmission_type.value) ok=false;
   if (readmission_type.value === "Other" && !readmission_other.value) ok=false;
@@ -250,7 +277,7 @@ function validate(){
   return ok;
 }
 
-// GENERATE ID
+// ID GENERATION
 async function generateSAMId(d,o){
   const id = `SAM-${d.substring(0,3)}-${o.substring(0,3)}`;
   const ref = db.collection("counters").doc(id);
