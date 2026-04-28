@@ -2,18 +2,9 @@
 <html>
 <head>
   <title>OTP Data Entry</title>
-
   <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      padding: 20px;
-    }
-
-    h2 {
-      margin-bottom: 30px;
-    }
-
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    h2 { margin-bottom: 30px; }
     .btn {
       display: block;
       width: 90%;
@@ -26,10 +17,6 @@
       background: #2c7be5;
       color: white;
     }
-
-    .btn:active {
-      background: #1a5dc9;
-    }
   </style>
 </head>
 
@@ -37,30 +24,14 @@
 
 <h2>OTP Data Entry</h2>
 
-<button class="btn" onclick="openModule('sam')">SAM CASES</button>
-<button class="btn" onclick="openModule('mam')">MAM CASES</button>
-<button class="btn" onclick="openModule('plw')">PLWs</button>
-<button class="btn" onclick="openModule('adolescent')">ADOLESCENTS</button>
+<button class="btn" onclick="go('sam')">SAM CASES</button>
+<button class="btn" onclick="go('mam')">MAM CASES</button>
+<button class="btn" onclick="go('plw')">PLWs</button>
+<button class="btn" onclick="go('adolescent')">ADOLESCENTS</button>
 
 <script>
-// 🔀 Navigation
-function openModule(type) {
-
-  if (type === "sam") {
-    location = "sam-menu.html";
-  }
-
-  if (type === "mam") {
-    location = "mam-menu.html";
-  }
-
-  if (type === "plw") {
-    location = "plw-menu.html";
-  }
-
-  if (type === "adolescent") {
-    location = "adolescent-menu.html";
-  }
+function go(type){
+  location = type + "-menu.html";
 }
 </script>
 
