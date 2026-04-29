@@ -41,14 +41,8 @@
       border-radius: 8px;
     }
 
-    .error {
-      color: red;
-      font-size: 12px;
-    }
-
-    .hidden {
-      display: none;
-    }
+    .error { color: red; font-size: 12px; }
+    .hidden { display: none; }
   </style>
 </head>
 
@@ -56,7 +50,6 @@
 
 <h2>SAM Registration</h2>
 
-<!-- BASIC -->
 <div class="card">
 <h3>Basic Information</h3>
 
@@ -75,11 +68,9 @@
 
 <label>Date of Birth *</label>
 <input id="dob" type="date">
-<div id="e_dob" class="error"></div>
 
 <label>Admission Date *</label>
 <input id="admission_date" type="date" onchange="calcAge()">
-<div id="e_admission_date" class="error"></div>
 
 <input id="age" placeholder="Age (months)" readonly>
 
@@ -91,18 +82,12 @@
 
 </div>
 
-<!-- ADMISSION -->
 <div class="card">
 <h3>Admission Details</h3>
 
-<input id="muac" type="number" step="0.1" placeholder="MUAC (cm) *">
-<div id="e_muac" class="error"></div>
-
-<input id="weight" type="number" step="0.1" placeholder="Weight (kg) *">
-<div id="e_weight" class="error"></div>
-
-<input id="height" type="number" step="0.1" placeholder="Height (cm) *">
-<div id="e_height" class="error"></div>
+<input id="muac" type="number" placeholder="MUAC *">
+<input id="weight" type="number" placeholder="Weight *">
+<input id="height" type="number" placeholder="Height *">
 
 <select id="edema">
   <option value="">Edema *</option>
@@ -111,18 +96,14 @@
   <option>++</option>
   <option>+++</option>
 </select>
-<div id="e_edema" class="error"></div>
 
 <select id="appetite">
-  <option value="">Appetite Test *</option>
+  <option value="">Appetite *</option>
   <option>Pass</option>
   <option>Fail</option>
 </select>
-<div id="e_appetite" class="error"></div>
-
 </div>
 
-<!-- ADMISSION TYPE -->
 <div class="card">
 <h3>Admission Type</h3>
 
@@ -130,32 +111,29 @@
   <option value="">Select *</option>
   <option value="new">New Case</option>
   <option value="readmission">Readmission</option>
-  <option value="transfer">Transferred from NSC</option>
+  <option value="transfer">Transfer</option>
 </select>
-<div id="e_admission_type" class="error"></div>
 
 <div id="new_box" class="hidden">
   <select id="new_type">
-    <option value="">New Case Type *</option>
+    <option value="">New Type *</option>
     <option>Red MUAC</option>
     <option>Edema</option>
   </select>
 </div>
 
 <div id="readmission_box" class="hidden">
-  <select id="readmission_type" onchange="handleReadmissionOther()">
-    <option value="">Readmission Type *</option>
-    <option>Admission after relapse</option>
-    <option>Admission after default</option>
+  <select id="readmission_type">
+    <option value="">Readmission *</option>
+    <option>Relapse</option>
+    <option>Default</option>
     <option>Other</option>
   </select>
 
-  <input id="readmission_other" placeholder="Specify (if Other)" class="hidden">
+  <input id="readmission_other" placeholder="Specify" class="hidden">
+</div>
 </div>
 
-</div>
-
-<!-- MEDICAL -->
 <div class="card">
 <h3>Medical</h3>
 
@@ -164,65 +142,56 @@
   <option>No</option>
   <option>Yes</option>
 </select>
-<div id="e_complications" class="error"></div>
 
-<input id="complication_detail" placeholder="Specify complication" class="hidden">
-
+<input id="complication_detail" placeholder="Specify" class="hidden">
 </div>
 
 <button onclick="save()">Register</button>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<!-- ✅ FIXED FIREBASE (v8) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-const firebaseConfig = { apiKey:"", projectId:"" };
+
+// 🔴 PUT YOUR REAL CONFIG HERE
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  projectId: "otp-dashboard"
+};
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-function getUser(){
-  return JSON.parse(localStorage.getItem("user"));
-}
-
-// AGE CALCULATION
+// AGE
 function calcAge(){
   if (!dob.value || !admission_date.value) return;
 
-  const dobVal = new Date(dob.value);
-  const admVal = new Date(admission_date.value);
+  const d = new Date(dob.value);
+  const a = new Date(admission_date.value);
 
-  if (admVal < dobVal) {
-    age.value = "";
-    alert("Admission date cannot be before date of birth");
+  if (a < d) {
+    alert("Invalid dates");
     return;
   }
 
-  let months = (admVal.getFullYear() - dobVal.getFullYear()) * 12;
-  months += admVal.getMonth() - dobVal.getMonth();
+  let m = (a.getFullYear() - d.getFullYear()) * 12;
+  m += a.getMonth() - d.getMonth();
 
-  age.value = months;
+  age.value = m;
 }
 
-// SHOW/HIDE
+// UI LOGIC
 function handleAdmissionType(){
   new_box.classList.add("hidden");
   readmission_box.classList.add("hidden");
 
-  if (admission_type.value === "new") new_box.classList.remove("hidden");
-  if (admission_type.value === "readmission") readmission_box.classList.remove("hidden");
-}
-
-function handleReadmissionOther(){
-  if (readmission_type.value === "Other") {
-    readmission_other.classList.remove("hidden");
-  } else {
-    readmission_other.classList.add("hidden");
-  }
+  if (admission_type.value==="new") new_box.classList.remove("hidden");
+  if (admission_type.value==="readmission") readmission_box.classList.remove("hidden");
 }
 
 function handleComplications(){
-  if (complications.value === "Yes"){
+  if (complications.value==="Yes") {
     complication_detail.classList.remove("hidden");
   } else {
     complication_detail.classList.add("hidden");
@@ -231,113 +200,65 @@ function handleComplications(){
 
 // VALIDATION
 function validate(){
-  let ok = true;
 
-  function err(id,val,msg="Required"){
-    document.getElementById(id).innerText = val ? "" : msg;
-    if (!val) ok=false;
-  }
+  if (!name.value || !father.value || !gender.value) return alert("Basic info missing"),false;
 
-  err("e_name",name.value);
-  err("e_father",father.value);
-  err("e_gender",gender.value);
-  err("e_dob",dob.value);
-  err("e_admission_date",admission_date.value);
-  err("e_contact",contact.value);
-  err("e_village",village.value);
+  if (!dob.value || !admission_date.value) return alert("Dates missing"),false;
 
-  err("e_muac",muac.value);
-  err("e_weight",weight.value);
-  err("e_height",height.value);
-  err("e_edema",edema.value);
-  err("e_appetite",appetite.value);
+  if (age.value < 6 || age.value > 59)
+    return alert("Age must be 6–59 months"),false;
 
-  err("e_admission_type",admission_type.value);
-  err("e_complications",complications.value);
+  if (!/^\d{11}$/.test(contact.value))
+    return alert("Enter 11 digit contact"),false;
 
-  // AGE VALIDATION
-  const ageVal = parseInt(age.value);
-  if (ageVal < 6 || ageVal > 59) {
-    document.getElementById("e_dob").innerText = "Age must be between 6–59 months";
-    ok = false;
-  }
+  if (!muac.value || !weight.value || !height.value)
+    return alert("Measurements missing"),false;
 
-  // CONTACT VALIDATION
-  if (!/^\d{11}$/.test(contact.value)) {
-    document.getElementById("e_contact").innerText = "Enter 11 digit number";
-    ok = false;
-  }
+  if (!edema.value || !appetite.value)
+    return alert("Clinical info missing"),false;
 
-  if (admission_type.value === "new" && !new_type.value) ok=false;
-  if (admission_type.value === "readmission" && !readmission_type.value) ok=false;
-  if (readmission_type.value === "Other" && !readmission_other.value) ok=false;
+  if (!admission_type.value)
+    return alert("Select admission type"),false;
 
-  if (complications.value === "Yes" && !complication_detail.value) ok=false;
+  if (admission_type.value==="new" && !new_type.value)
+    return alert("Select new case type"),false;
 
-  return ok;
-}
+  if (admission_type.value==="readmission" && !readmission_type.value)
+    return alert("Select readmission type"),false;
 
-// ID GENERATION
-async function generateSAMId(d,o){
-  const id = `SAM-${d.substring(0,3)}-${o.substring(0,3)}`;
-  const ref = db.collection("counters").doc(id);
-  const doc = await ref.get();
-  let n = doc.exists ? doc.data().current_number : 0;
-  n++;
-  await ref.set({current_number:n},{merge:true});
-  return `${d.substring(0,3)}-${o.substring(0,3)}-${String(n).padStart(4,"0")}`;
+  if (complications.value==="Yes" && !complication_detail.value)
+    return alert("Specify complication"),false;
+
+  return true;
 }
 
 // SAVE
 async function save(){
 
+  console.log("SAVE CLICKED");
+
   if (!validate()) return;
 
-  const u = getUser();
-  const sam_id = await generateSAMId(u.district,u.otp);
+  try{
 
-  await db.collection("otp_children").add({
+    await db.collection("otp_children").add({
+      name:name.value,
+      father:father.value,
+      gender:gender.value,
+      age:age.value,
+      contact:contact.value,
+      village:village.value,
+      createdAt:new Date()
+    });
 
-    sam_id,
+    alert("✅ Registered Successfully");
 
-    name:name.value,
-    father:father.value,
-    gender:gender.value,
-    dob:dob.value,
-    age:age.value,
-
-    contact:contact.value,
-    village:village.value,
-
-    district:u.district,
-    otp:u.otp,
-
-    admission:{
-      date:admission_date.value,
-      muac:muac.value,
-      weight:weight.value,
-      height:height.value,
-      edema:edema.value,
-      appetite:appetite.value,
-
-      type:admission_type.value,
-      new_type:new_type.value,
-      readmission_type:readmission_type.value,
-      readmission_other:readmission_other.value
-    },
-
-    medical:{
-      complications:complications.value,
-      detail:complication_detail.value
-    },
-
-    status:"active",
-    createdAt:new Date()
-
-  });
-
-  alert("Registered: "+sam_id);
+  } catch(e){
+    console.error(e);
+    alert("Error: "+e.message);
+  }
 }
+
 </script>
 
 </body>
