@@ -12,23 +12,17 @@
       background: #f5f5f5;
     }
 
-    h2 { text-align: center; }
-
     .card {
       background: white;
       padding: 15px;
       margin-bottom: 15px;
       border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
 
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      margin: 5px 0;
     }
 
     button {
@@ -37,25 +31,13 @@
       background: green;
       color: white;
       border: none;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
     }
-
-    button:disabled { background: gray; }
-
-    .error { color: red; font-size: 12px; }
 
     #msg {
       text-align: center;
       font-weight: bold;
       margin-bottom: 10px;
     }
-
-    .success { color: green; }
-    .fail { color: red; }
-
-    .hidden { display: none; }
   </style>
 </head>
 
@@ -65,143 +47,99 @@
 
 <div id="msg"></div>
 
-<!-- BASIC -->
 <div class="card">
-<h3>Basic Information</h3>
+<h3>Basic Info</h3>
 
 <input id="name" placeholder="Child Name *">
-<div id="e_name" class="error"></div>
-
 <input id="father" placeholder="Father Name *">
-<div id="e_father" class="error"></div>
 
 <select id="gender">
   <option value="">Gender *</option>
   <option>Male</option>
   <option>Female</option>
 </select>
-<div id="e_gender" class="error"></div>
 
-<label>Date of Birth *</label>
+<label>DOB</label>
 <input id="dob" type="date" onchange="calcAge()">
-<div id="e_dob" class="error"></div>
 
-<label>Admission Date *</label>
+<label>Admission Date</label>
 <input id="admission_date" type="date" onchange="calcAge()">
-<div id="e_admission_date" class="error"></div>
 
 <input id="age" placeholder="Age (months)" readonly>
 
-<input id="contact" placeholder="Contact Number *">
-<div id="e_contact" class="error"></div>
-
-<input id="village" placeholder="Village / Address *">
-<div id="e_village" class="error"></div>
+<input id="contact" placeholder="Contact (11 digits)">
+<input id="village" placeholder="Village">
 </div>
 
-<!-- ADMISSION -->
 <div class="card">
-<h3>Admission Details</h3>
+<h3>Admission</h3>
 
-<input id="muac" type="number" placeholder="MUAC *">
-<div id="e_muac" class="error"></div>
-
-<input id="weight" type="number" placeholder="Weight *">
-<div id="e_weight" class="error"></div>
-
-<input id="height" type="number" placeholder="Height *">
-<div id="e_height" class="error"></div>
+<input id="muac" placeholder="MUAC">
+<input id="weight" placeholder="Weight">
+<input id="height" placeholder="Height">
 
 <select id="edema">
-  <option value="">Edema *</option>
+  <option value="">Edema</option>
   <option>0</option>
   <option>+</option>
   <option>++</option>
   <option>+++</option>
 </select>
-<div id="e_edema" class="error"></div>
 
 <select id="appetite">
-  <option value="">Appetite *</option>
+  <option value="">Appetite</option>
   <option>Pass</option>
   <option>Fail</option>
 </select>
-<div id="e_appetite" class="error"></div>
 </div>
 
-<!-- ADMISSION TYPE -->
-<div class="card">
-<h3>Admission Type</h3>
-
-<select id="admission_type" onchange="handleAdmissionType()">
-  <option value="">Select *</option>
-  <option value="new">New Case</option>
-  <option value="readmission">Readmission</option>
-  <option value="transfer">Transferred from NSC</option>
-</select>
-<div id="e_admission_type" class="error"></div>
-
-<div id="new_box" class="hidden">
-  <select id="new_type">
-    <option value="">New Case Type *</option>
-    <option>Red MUAC</option>
-    <option>Edema</option>
-  </select>
-</div>
-
-<div id="readmission_box" class="hidden">
-  <select id="readmission_type" onchange="handleReadmissionOther()">
-    <option value="">Readmission Type *</option>
-    <option>Admission after relapse</option>
-    <option>Admission after default</option>
-    <option>Other</option>
-  </select>
-
-  <input id="readmission_other" placeholder="Specify (if Other)" class="hidden">
-</div>
-</div>
-
-<!-- MEDICAL -->
 <div class="card">
 <h3>Medical</h3>
 
-<select id="complications" onchange="handleComplications()">
-  <option value="">Complications *</option>
+<select id="complications">
+  <option value="">Complications</option>
   <option>No</option>
   <option>Yes</option>
 </select>
-<div id="e_complications" class="error"></div>
 
-<input id="complication_detail" placeholder="Specify complication" class="hidden">
+<input id="complication_detail" placeholder="If yes, specify">
 </div>
 
-<button id="btn" onclick="save()">Register</button>
+<button onclick="save()">Register</button>
 
-<!-- Firebase -->
+<!-- ✅ Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
+
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  projectId: "otp-dashboard"
+  apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+  authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+  projectId: "otp-dashboard-3c17e",
+  storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
+  messagingSenderId: "353305433217",
+  appId: "1:353305433217:web:bcebc8860babaa5e48a980"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// AGE
+// MESSAGE
+function showMsg(text, ok=true){
+  const m = document.getElementById("msg");
+  m.innerText = text;
+  m.style.color = ok ? "green" : "red";
+}
+
+// AGE CALC
 function calcAge(){
-  if (!dob.value || !admission_date.value){
-    age.value="";
-    return;
-  }
+  if (!dob.value || !admission_date.value) return;
 
   const d = new Date(dob.value);
   const a = new Date(admission_date.value);
 
   if (a < d){
-    age.value="";
     showMsg("Invalid dates", false);
     return;
   }
@@ -212,93 +150,17 @@ function calcAge(){
   age.value = m;
 }
 
-// UI
-function handleAdmissionType(){
-  new_box.classList.add("hidden");
-  readmission_box.classList.add("hidden");
-
-  if (admission_type.value==="new") new_box.classList.remove("hidden");
-  if (admission_type.value==="readmission") readmission_box.classList.remove("hidden");
-}
-
-function handleReadmissionOther(){
-  readmission_other.classList.toggle("hidden", readmission_type.value!=="Other");
-}
-
-function handleComplications(){
-  complication_detail.classList.toggle("hidden", complications.value!=="Yes");
-}
-
-// CLEAR ERRORS
-document.querySelectorAll("input,select").forEach(el=>{
-  el.addEventListener("input",()=>clearError(el.id));
-  el.addEventListener("change",()=>clearError(el.id));
-});
-
-function clearError(id){
-  const e = document.getElementById("e_"+id);
-  if(e) e.innerText="";
-}
-
-// MESSAGE
-function showMsg(msg, success=true){
-  const m = document.getElementById("msg");
-  m.innerText = msg;
-  m.className = success ? "success" : "fail";
-}
-
 // VALIDATION
 function validate(){
 
-  if (!name.value){ e_name.innerText="Required"; return false; }
-  if (!father.value){ e_father.innerText="Required"; return false; }
-  if (!gender.value){ e_gender.innerText="Required"; return false; }
+  if (!name.value) return showMsg("Enter name", false), false;
+  if (!dob.value || !admission_date.value) return showMsg("Enter dates", false), false;
 
-  if (!dob.value){ e_dob.innerText="Required"; return false; }
-  if (!admission_date.value){ e_admission_date.innerText="Required"; return false; }
+  if (age.value < 6 || age.value > 59)
+    return showMsg("Age must be 6–59 months", false), false;
 
-  if (age.value < 6 || age.value > 59){
-    e_dob.innerText="Age must be 6–59 months";
-    return false;
-  }
-
-  if (!/^\d{11}$/.test(contact.value)){
-    e_contact.innerText="11 digit required";
-    return false;
-  }
-
-  if (!village.value){ e_village.innerText="Required"; return false; }
-
-  if (!muac.value){ e_muac.innerText="Required"; return false; }
-  if (!weight.value){ e_weight.innerText="Required"; return false; }
-  if (!height.value){ e_height.innerText="Required"; return false; }
-
-  if (!edema.value){ e_edema.innerText="Required"; return false; }
-  if (!appetite.value){ e_appetite.innerText="Required"; return false; }
-
-  if (!admission_type.value){
-    e_admission_type.innerText="Required"; return false;
-  }
-
-  if (admission_type.value==="new" && !new_type.value){
-    showMsg("Select new case type",false); return false;
-  }
-
-  if (admission_type.value==="readmission" && !readmission_type.value){
-    showMsg("Select readmission type",false); return false;
-  }
-
-  if (readmission_type.value==="Other" && !readmission_other.value){
-    showMsg("Specify readmission",false); return false;
-  }
-
-  if (!complications.value){
-    e_complications.innerText="Required"; return false;
-  }
-
-  if (complications.value==="Yes" && !complication_detail.value){
-    showMsg("Specify complication",false); return false;
-  }
+  if (!/^\d{11}$/.test(contact.value))
+    return showMsg("Enter 11 digit contact", false), false;
 
   return true;
 }
@@ -306,38 +168,46 @@ function validate(){
 // SAVE
 async function save(){
 
-  if (!validate()) return;
+  showMsg("Saving...", true);
 
-  btn.disabled = true;
-  btn.innerText = "Saving...";
+  try {
 
-  try{
+    if (!validate()) return;
 
     await db.collection("otp_children").add({
-      name:name.value,
-      father:father.value,
-      gender:gender.value,
-      age:age.value,
-      contact:contact.value,
-      village:village.value,
-      createdAt:new Date()
+      name: name.value,
+      father: father.value,
+      gender: gender.value,
+      age: age.value,
+      contact: contact.value,
+      village: village.value,
+
+      muac: muac.value,
+      weight: weight.value,
+      height: height.value,
+      edema: edema.value,
+      appetite: appetite.value,
+
+      complications: complications.value,
+      complication_detail: complication_detail.value,
+
+      createdAt: new Date()
     });
 
-    showMsg("✔ Registration Successful", true);
+    showMsg("✔ Registration Successful");
 
     document.querySelectorAll("input").forEach(i=>i.value="");
     document.querySelectorAll("select").forEach(s=>s.value="");
-
     age.value="";
 
-  }catch(e){
-    console.error(e);
-    showMsg("❌ Failed: "+e.message,false);
-  }
+  } catch (e) {
 
-  btn.disabled=false;
-  btn.innerText="Register";
+    console.error(e);
+    showMsg("❌ " + e.message, false);
+
+  }
 }
+
 </script>
 
 </body>
