@@ -2,6 +2,61 @@
 <html>
 <head>
   <title>SAM Registration</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 500px;
+      margin: auto;
+      padding: 10px;
+      background: #f5f5f5;
+    }
+
+    h2 { text-align: center; }
+
+    .card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: green;
+      color: white;
+      border: none;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled { background: gray; }
+
+    .error { color: red; font-size: 12px; }
+
+    #msg {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .success { color: green; }
+    .fail { color: red; }
+
+    .hidden { display: none; }
+  </style>
 </head>
 
 <body>
@@ -10,25 +65,40 @@
 
 <div id="msg"></div>
 
-<input id="name" placeholder="Child Name"><br><br>
-<input id="contact" placeholder="Contact (11 digits)"><br><br>
+<div class="card">
+<input id="name" placeholder="Child Name *">
+<input id="father" placeholder="Father Name *">
 
-<button onclick="save()">Register</button>
+<select id="gender">
+  <option value="">Gender *</option>
+  <option>Male</option>
+  <option>Female</option>
+</select>
 
-<!-- ✅ Firebase v8 ONLY -->
+<label>DOB</label>
+<input id="dob" type="date" onchange="calcAge()">
+
+<label>Admission Date</label>
+<input id="admission_date" type="date" onchange="calcAge()">
+
+<input id="age" placeholder="Age (months)" readonly>
+
+<input id="contact" placeholder="Contact (11 digits)">
+<input id="village" placeholder="Village">
+</div>
+
+<button id="btn" onclick="save()">Register</button>
+
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
 
-// ✅ YOUR REAL CONFIG (ALREADY CORRECT)
+// 🔴 PUT YOUR REAL API KEY HERE
 const firebaseConfig = {
-  apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
-  authDomain: "otp-dashboard-3c17e.firebaseapp.com",
-  projectId: "otp-dashboard-3c17e",
-  storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
-  messagingSenderId: "353305433217",
-  appId: "1:353305433217:web:bcebc8860babaa5e48a980"
+  apiKey: "YOUR_API_KEY",
+  projectId: "otp-dashboard"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -38,43 +108,88 @@ const db = firebase.firestore();
 function showMsg(text, ok=true){
   const m = document.getElementById("msg");
   m.innerText = text;
-  m.style.color = ok ? "green" : "red";
+  m.className = ok ? "success" : "fail";
+}
+
+// AGE
+function calcAge(){
+  if (!dob.value || !admission_date.value) return;
+
+  const d = new Date(dob.value);
+  const a = new Date(admission_date.value);
+
+  if (a < d){
+    showMsg("❌ Invalid dates", false);
+    return;
+  }
+
+  let m = (a.getFullYear()-d.getFullYear())*12;
+  m += a.getMonth()-d.getMonth();
+
+  age.value = m;
+}
+
+// VALIDATION (simple but solid)
+function validate(){
+
+  if (!name.value) return showMsg("Enter name", false), false;
+  if (!dob.value || !admission_date.value) return showMsg("Enter dates", false), false;
+
+  if (age.value < 6 || age.value > 59)
+    return showMsg("Age must be 6–59 months", false), false;
+
+  if (!/^\d{11}$/.test(contact.value))
+    return showMsg("Enter 11 digit contact", false), false;
+
+  return true;
 }
 
 // SAVE
 async function save(){
 
-  console.log("BUTTON CLICKED");
+  console.log("👉 BUTTON CLICKED");
+  showMsg("Processing...", true);
 
-  if (!name.value){
-    showMsg("Enter name", false);
-    return;
-  }
-
-  if (!/^\d{11}$/.test(contact.value)){
-    showMsg("Enter 11 digit contact", false);
-    return;
-  }
+  const btn = document.getElementById("btn");
+  btn.disabled = true;
+  btn.innerText = "Saving...";
 
   try {
 
+    // VALIDATION
+    if (!validate()){
+      btn.disabled = false;
+      btn.innerText = "Register";
+      return;
+    }
+
+    console.log("✅ Validation passed");
+
+    // FIREBASE TEST SAVE
     await db.collection("otp_children").add({
       name: name.value,
+      age: age.value,
       contact: contact.value,
       createdAt: new Date()
     });
 
-    showMsg("✔ Registration Successful");
+    console.log("✅ Data saved");
 
-    name.value="";
-    contact.value="";
+    showMsg("✔ Registration Successful", true);
+
+    // RESET
+    document.querySelectorAll("input").forEach(i=>i.value="");
+    age.value="";
 
   } catch (e) {
 
-    console.error(e);
+    console.error("❌ ERROR:", e);
     showMsg("❌ " + e.message, false);
 
   }
+
+  btn.disabled = false;
+  btn.innerText = "Register";
 }
 
 </script>
