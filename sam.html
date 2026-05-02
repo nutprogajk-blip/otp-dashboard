@@ -2,54 +2,40 @@
 <html>
 <head>
   <title>SAM Registration</title>
-
   <style>
-    body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+    body { font-family: Arial; max-width: 500px; margin:auto; padding:20px; }
     input, select { width:100%; padding:10px; margin:5px 0; }
-    button {
-      width:100%;
-      padding:12px;
-      background:green;
-      color:white;
-      border:none;
-      cursor:pointer;
-    }
-    #msg { margin:10px 0; font-weight:bold; text-align:center; }
+    button { width:100%; padding:12px; background:green; color:white; cursor:pointer; }
+    #msg { margin:10px; text-align:center; font-weight:bold; }
   </style>
 </head>
 
 <body>
 
 <h2>SAM Registration</h2>
-
 <div id="msg"></div>
 
-<input id="name" placeholder="Child Name *">
-<input id="father" placeholder="Father Name *">
-
+<input id="name" placeholder="Name">
+<input id="father" placeholder="Father">
 <select id="gender">
-  <option value="">Gender *</option>
+  <option value="">Gender</option>
   <option>Male</option>
   <option>Female</option>
 </select>
 
 <input id="dob" type="date">
 <input id="admission_date" type="date">
-
-<input id="age" placeholder="Age (months)" readonly>
+<input id="age" readonly placeholder="Age">
 
 <input id="contact" placeholder="Contact (11 digits)">
-<input id="village" placeholder="Village">
 
 <button id="btn">Register</button>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
 
-// 🔥 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
@@ -59,13 +45,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// MESSAGE
 function showMsg(t, ok=true){
   msg.innerText = t;
   msg.style.color = ok ? "green" : "red";
 }
 
-// AGE CALCULATION
+// AGE
 function calcAge(){
   if (!dob.value || !admission_date.value) return;
 
@@ -78,58 +63,64 @@ function calcAge(){
   age.value = m;
 }
 
-// attach events
-document.getElementById("dob").addEventListener("change", calcAge);
-document.getElementById("admission_date").addEventListener("change", calcAge);
+dob.onchange = calcAge;
+admission_date.onchange = calcAge;
 
-// SAVE FUNCTION
-document.getElementById("btn").addEventListener("click", async function(){
+// 🔥 SAFE SAVE (WITH TIMEOUT)
+function saveData(data){
+
+  return new Promise((resolve, reject) => {
+
+    let done = false;
+
+    // timeout (5 sec)
+    setTimeout(()=>{
+      if (!done){
+        reject("Network/connection issue");
+      }
+    }, 5000);
+
+    db.collection("otp_children").add(data)
+      .then(res=>{
+        done = true;
+        resolve(res);
+      })
+      .catch(err=>{
+        done = true;
+        reject(err.message);
+      });
+
+  });
+
+}
+
+// CLICK
+btn.addEventListener("click", async ()=>{
 
   showMsg("Processing...");
 
-  let n = name.value.trim();
-  let f = father.value.trim();
-  let g = gender.value;
-
-  if (!n || !f || !g){
-    showMsg("Fill basic information", false);
-    return;
-  }
-
-  if (!dob.value || !admission_date.value){
-    showMsg("Enter dates", false);
-    return;
-  }
-
-  if (age.value < 6 || age.value > 59){
-    showMsg("Age must be 6–59 months", false);
-    return;
-  }
-
-  if (!/^\d{11}$/.test(contact.value.trim())){
-    showMsg("Enter valid 11 digit contact", false);
+  if (!name.value.trim()){
+    showMsg("Enter name", false);
     return;
   }
 
   try {
 
-    await db.collection("otp_children").add({
-      name: n,
-      father: f,
-      gender: g,
-      age: age.value,
-      contact: contact.value.trim(),
+    await saveData({
+      name: name.value,
       createdAt: new Date()
     });
 
     showMsg("✔ Registration Successful");
 
   } catch(e){
-    console.error(e);
-    showMsg("❌ " + e.message, false);
+
+    showMsg("❌ " + e, false);
+
   }
 
 });
+
 </script>
 
 </body>
