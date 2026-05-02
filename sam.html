@@ -2,91 +2,36 @@
 <html>
 <head>
   <title>SAM Registration</title>
-
-  <style>
-    body {
-      font-family: Arial;
-      max-width: 600px;
-      margin: auto;
-      padding: 15px;
-      background: #f4f4f4;
-    }
-
-    h2 { text-align: center; }
-
-    .card {
-      background: white;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: green;
-      color: white;
-      border: none;
-      font-size: 16px;
-      border-radius: 6px;
-    }
-
-    #msg {
-      text-align: center;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-  </style>
 </head>
 
 <body>
 
-<h2>SAM Case Registration</h2>
-
+<h2>SAM Registration</h2>
 <div id="msg"></div>
 
-<!-- BASIC INFO -->
-<div class="card">
-<h3>Child Information</h3>
-
-<input id="name" placeholder="Child Name *">
-<input id="father" placeholder="Father Name *">
+<input id="name" placeholder="Child Name">
+<input id="father" placeholder="Father Name">
 
 <select id="gender">
-  <option value="">Gender *</option>
+  <option value="">Gender</option>
   <option>Male</option>
   <option>Female</option>
 </select>
 
-<label>Date of Birth *</label>
 <input id="dob" type="date" onchange="calcAge()">
-
-<label>Admission Date *</label>
 <input id="admission_date" type="date" onchange="calcAge()">
 
-<input id="age" placeholder="Age (months)" readonly>
+<input id="age" placeholder="Age" readonly>
 
-<input id="contact" placeholder="Contact (11 digits) *">
-<input id="village" placeholder="Village *">
+<input id="contact" placeholder="Contact (11 digits)">
+<input id="village" placeholder="Village">
 
-</div>
-
-<!-- ADMISSION -->
-<div class="card">
-<h3>Admission Details</h3>
-
-<input id="muac" placeholder="MUAC *">
-<input id="weight" placeholder="Weight (kg) *">
-<input id="height" placeholder="Height (cm) *">
+<input id="muac" placeholder="MUAC">
+<input id="weight" placeholder="Weight">
+<input id="height" placeholder="Height">
 
 <select id="edema">
-  <option value="">Edema *</option>
+  <option value="">Edema</option>
   <option>0</option>
   <option>+</option>
   <option>++</option>
@@ -94,166 +39,136 @@
 </select>
 
 <select id="appetite">
-  <option value="">Appetite Test *</option>
+  <option value="">Appetite</option>
   <option>Pass</option>
   <option>Fail</option>
 </select>
 
 <select id="admission_type">
-  <option value="">Admission Type *</option>
+  <option value="">Admission Type</option>
   <option>New - Red MUAC</option>
   <option>New - Edema</option>
-  <option>Readmission - Relapse</option>
-  <option>Readmission - Default</option>
-  <option>Other</option>
-  <option>Transfer from NSC</option>
 </select>
 
-</div>
-
-<!-- MEDICAL -->
-<div class="card">
-<h3>Medical</h3>
-
-<select id="complications" onchange="toggleComplication()">
-  <option value="">Complications *</option>
+<select id="complications">
+  <option value="">Complications</option>
   <option>No</option>
   <option>Yes</option>
 </select>
 
-<input id="complication_detail" placeholder="If yes, specify" style="display:none;">
-
-</div>
+<input id="complication_detail" placeholder="If yes, specify">
 
 <button onclick="save()">Register</button>
 
-<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
 
-// 🔥 YOUR CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
-  projectId: "otp-dashboard-3c17e",
-  storageBucket: "otp-dashboard-3c17e.firebasestorage.app",
-  messagingSenderId: "353305433217",
-  appId: "1:353305433217:web:bcebc8860babaa5e48a980"
+  projectId: "otp-dashboard-3c17e"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// MESSAGE
-function showMsg(text, ok=true){
-  const m = document.getElementById("msg");
-  m.innerText = text;
-  m.style.color = ok ? "green" : "red";
+function showMsg(t, ok=true){
+  msg.innerText = t;
+  msg.style.color = ok ? "green" : "red";
 }
 
-// AGE CALCULATION
+// AGE
 function calcAge(){
   if (!dob.value || !admission_date.value) return;
 
-  const d = new Date(dob.value);
-  const a = new Date(admission_date.value);
+  let d = new Date(dob.value);
+  let a = new Date(admission_date.value);
 
-  if (a < d){
-    showMsg("Admission date cannot be before DOB", false);
-    return;
-  }
-
-  let m = (a.getFullYear() - d.getFullYear()) * 12;
-  m += (a.getMonth() - d.getMonth());
+  let m = (a.getFullYear()-d.getFullYear())*12;
+  m += a.getMonth()-d.getMonth();
 
   age.value = m;
 }
 
-// SHOW/HIDE COMPLICATION FIELD
-function toggleComplication(){
-  if (complications.value === "Yes"){
-    complication_detail.style.display = "block";
-  } else {
-    complication_detail.style.display = "none";
-    complication_detail.value = "";
-  }
-}
-
-// VALIDATION
+// VALIDATION (FIXED)
 function validate(){
 
-  if (!name.value || !father.value || !gender.value)
-    return showMsg("Fill basic info", false), false;
+  let n = name.value.trim();
+  let f = father.value.trim();
+  let g = gender.value;
 
-  if (!dob.value || !admission_date.value)
-    return showMsg("Enter dates", false), false;
+  if (!n || !f || !g){
+    showMsg("Fill basic information", false);
+    return false;
+  }
 
-  if (age.value < 6 || age.value > 59)
-    return showMsg("Age must be 6–59 months", false), false;
+  if (!dob.value || !admission_date.value){
+    showMsg("Enter dates", false);
+    return false;
+  }
 
-  if (!/^\d{11}$/.test(contact.value))
-    return showMsg("Contact must be 11 digits", false), false;
+  if (age.value < 6 || age.value > 59){
+    showMsg("Age must be 6–59 months", false);
+    return false;
+  }
 
-  if (!village.value)
-    return showMsg("Enter village", false), false;
+  if (!/^\d{11}$/.test(contact.value.trim())){
+    showMsg("Contact must be 11 digits", false);
+    return false;
+  }
 
-  if (!muac.value || !weight.value || !height.value)
-    return showMsg("Enter anthropometry", false), false;
+  if (!village.value.trim()){
+    showMsg("Enter village", false);
+    return false;
+  }
 
-  if (!edema.value || !appetite.value || !admission_type.value)
-    return showMsg("Complete admission details", false), false;
+  if (!muac.value || !weight.value || !height.value){
+    showMsg("Enter MUAC/Weight/Height", false);
+    return false;
+  }
 
-  if (!complications.value)
-    return showMsg("Select complications", false), false;
+  if (!edema.value || !appetite.value || !admission_type.value){
+    showMsg("Complete admission info", false);
+    return false;
+  }
 
-  if (complications.value === "Yes" && !complication_detail.value)
-    return showMsg("Specify complications", false), false;
+  if (!complications.value){
+    showMsg("Select complications", false);
+    return false;
+  }
+
+  if (complications.value === "Yes" && !complication_detail.value.trim()){
+    showMsg("Specify complication", false);
+    return false;
+  }
 
   return true;
 }
 
-// SAVE DATA
+// SAVE
 async function save(){
 
-  showMsg("Saving...", true);
+  showMsg("Saving...");
+
+  if (!validate()) return;
 
   try {
 
-    if (!validate()) return;
-
     await db.collection("otp_children").add({
-      name: name.value,
-      father: father.value,
+      name: name.value.trim(),
+      father: father.value.trim(),
       gender: gender.value,
-      dob: dob.value,
-      admission_date: admission_date.value,
       age: age.value,
-      contact: contact.value,
-      village: village.value,
-
-      muac: muac.value,
-      weight: weight.value,
-      height: height.value,
-      edema: edema.value,
-      appetite: appetite.value,
-      admission_type: admission_type.value,
-
-      complications: complications.value,
-      complication_detail: complication_detail.value,
-
+      contact: contact.value.trim(),
+      village: village.value.trim(),
       createdAt: new Date()
     });
 
     showMsg("✔ Registration Successful");
 
-    document.querySelectorAll("input").forEach(i=>i.value="");
-    document.querySelectorAll("select").forEach(s=>s.value="");
-    age.value="";
-    complication_detail.style.display="none";
-
-  } catch (e) {
+  } catch(e){
     console.error(e);
     showMsg("❌ " + e.message, false);
   }
