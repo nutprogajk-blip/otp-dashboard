@@ -1,178 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SAM Registration</title>
+  <title>SAM Test</title>
+
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button {
+      padding: 10px;
+      background: green;
+      color: white;
+      border: none;
+      cursor: pointer; /* 🔥 forces hand cursor */
+    }
+    #msg { margin-top: 10px; font-weight: bold; }
+  </style>
 </head>
 
 <body>
 
-<h2>SAM Registration</h2>
+<h2>Test Button</h2>
+
+<input id="name" placeholder="Name"><br><br>
+
+<button id="btn">Register</button>
+
 <div id="msg"></div>
-
-<input id="name" placeholder="Child Name">
-<input id="father" placeholder="Father Name">
-
-<select id="gender">
-  <option value="">Gender</option>
-  <option>Male</option>
-  <option>Female</option>
-</select>
-
-<input id="dob" type="date" onchange="calcAge()">
-<input id="admission_date" type="date" onchange="calcAge()">
-
-<input id="age" placeholder="Age" readonly>
-
-<input id="contact" placeholder="Contact (11 digits)">
-<input id="village" placeholder="Village">
-
-<input id="muac" placeholder="MUAC">
-<input id="weight" placeholder="Weight">
-<input id="height" placeholder="Height">
-
-<select id="edema">
-  <option value="">Edema</option>
-  <option>0</option>
-  <option>+</option>
-  <option>++</option>
-  <option>+++</option>
-</select>
-
-<select id="appetite">
-  <option value="">Appetite</option>
-  <option>Pass</option>
-  <option>Fail</option>
-</select>
-
-<select id="admission_type">
-  <option value="">Admission Type</option>
-  <option>New - Red MUAC</option>
-  <option>New - Edema</option>
-</select>
-
-<select id="complications">
-  <option value="">Complications</option>
-  <option>No</option>
-  <option>Yes</option>
-</select>
-
-<input id="complication_detail" placeholder="If yes, specify">
-
-<button onclick="save()">Register</button>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
-  authDomain: "otp-dashboard-3c17e.firebaseapp.com",
-  projectId: "otp-dashboard-3c17e"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-function showMsg(t, ok=true){
-  msg.innerText = t;
-  msg.style.color = ok ? "green" : "red";
-}
-
-// AGE
-function calcAge(){
-  if (!dob.value || !admission_date.value) return;
-
-  let d = new Date(dob.value);
-  let a = new Date(admission_date.value);
-
-  let m = (a.getFullYear()-d.getFullYear())*12;
-  m += a.getMonth()-d.getMonth();
-
-  age.value = m;
-}
-
-// VALIDATION (FIXED)
-function validate(){
-
-  let n = name.value.trim();
-  let f = father.value.trim();
-  let g = gender.value;
-
-  if (!n || !f || !g){
-    showMsg("Fill basic information", false);
-    return false;
-  }
-
-  if (!dob.value || !admission_date.value){
-    showMsg("Enter dates", false);
-    return false;
-  }
-
-  if (age.value < 6 || age.value > 59){
-    showMsg("Age must be 6–59 months", false);
-    return false;
-  }
-
-  if (!/^\d{11}$/.test(contact.value.trim())){
-    showMsg("Contact must be 11 digits", false);
-    return false;
-  }
-
-  if (!village.value.trim()){
-    showMsg("Enter village", false);
-    return false;
-  }
-
-  if (!muac.value || !weight.value || !height.value){
-    showMsg("Enter MUAC/Weight/Height", false);
-    return false;
-  }
-
-  if (!edema.value || !appetite.value || !admission_type.value){
-    showMsg("Complete admission info", false);
-    return false;
-  }
-
-  if (!complications.value){
-    showMsg("Select complications", false);
-    return false;
-  }
-
-  if (complications.value === "Yes" && !complication_detail.value.trim()){
-    showMsg("Specify complication", false);
-    return false;
-  }
-
-  return true;
-}
-
-// SAVE
-async function save(){
-
-  showMsg("Saving...");
-
-  if (!validate()) return;
-
-  try {
-
-    await db.collection("otp_children").add({
-      name: name.value.trim(),
-      father: father.value.trim(),
-      gender: gender.value,
-      age: age.value,
-      contact: contact.value.trim(),
-      village: village.value.trim(),
-      createdAt: new Date()
-    });
-
-    showMsg("✔ Registration Successful");
-
-  } catch(e){
-    console.error(e);
-    showMsg("❌ " + e.message, false);
-  }
-}
+// 🔥 FORCE BUTTON CLICK
+document.getElementById("btn").addEventListener("click", function(){
+  document.getElementById("msg").innerText = "✅ BUTTON WORKING";
+});
 
 </script>
 
