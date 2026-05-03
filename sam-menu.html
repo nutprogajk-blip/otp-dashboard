@@ -1,39 +1,242 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SAM Cases</title>
+  <title>SAM Menu</title>
+
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    .btn {
-      display: block;
-      width: 90%;
-      max-width: 400px;
-      margin: 15px auto;
-      padding: 15px;
-      font-size: 18px;
-      border: none;
-      border-radius: 8px;
-      background: green;
-      color: white;
-    }
+    body { font-family: Arial; max-width: 700px; margin:auto; padding:15px; background:#f4f4f4;}
+    .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
+    input, select { width:100%; padding:10px; margin:5px 0; }
+    button { width:100%; padding:12px; margin-top:5px; cursor:pointer; }
+    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
+    .hidden { display:none; }
+    #profile { background:#e3f2fd; padding:10px; margin-top:10px; }
   </style>
 </head>
 
 <body>
 
-<h2>SAM CASES</h2>
+<h2>SAM Module</h2>
 
-<button class="btn" onclick="location='sam.html'">
-  Register New Case
-</button>
+<div id="msg"></div>
 
-<button class="btn" onclick="location='sam-list.html'">
-  Edit Existing Case
-</button>
+<!-- MAIN OPTIONS -->
+<div class="card">
+  <button onclick="goRegister()">1. Register New SAM Case</button>
+  <button onclick="showSearch()">2. Search Existing Case</button>
+</div>
 
-<button class="btn" onclick="location='entry-otp.html'">
-  ⬅ Back
-</button>
+<!-- SEARCH -->
+<div id="searchBox" class="card hidden">
+  <h3>Search Case</h3>
+  <input id="search_id" placeholder="Enter Child ID (ALI-03123456789)">
+  <button onclick="searchChild()">Search</button>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="hidden"></div>
+
+<!-- ACTIONS -->
+<div id="actions" class="card hidden">
+
+  <button onclick="modifyCase()">Modify Case</button>
+  <button onclick="deleteCase()">Delete Case</button>
+  <button onclick="showVisit()">Add Visit</button>
+  <button onclick="showDischarge()">Discharge Case</button>
+
+</div>
+
+<!-- VISIT FORM -->
+<div id="visitForm" class="card hidden">
+  <h3>Add Visit</h3>
+
+  <input id="visit_no" placeholder="Visit No (1–11)">
+  <input id="visit_date" type="date">
+  <input id="muac" placeholder="MUAC">
+  <input id="weight" placeholder="Weight">
+
+  <select id="edema">
+    <option value="">Edema</option>
+    <option>0</option><option>+</option><option>++</option><option>+++</option>
+  </select>
+
+  <select id="appetite">
+    <option value="">Appetite</option>
+    <option>Pass</option><option>Fail</option>
+  </select>
+
+  <select id="complications">
+    <option value="">Complications</option>
+    <option>No</option><option>Yes</option>
+  </select>
+
+  <input id="rutf" placeholder="RUTF Given">
+
+  <button onclick="saveVisit()">Save Visit</button>
+</div>
+
+<!-- DISCHARGE -->
+<div id="dischargeForm" class="card hidden">
+  <h3>Discharge Case</h3>
+
+  <select id="outcome">
+    <option value="">Outcome</option>
+    <option>Cured</option>
+    <option>Default</option>
+    <option>Death</option>
+    <option>Non-Responder</option>
+  </select>
+
+  <input id="discharge_date" type="date">
+
+  <button onclick="saveOutcome()">Save Outcome</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+  authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+  projectId: "otp-dashboard-3c17e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentDocId = null;
+let currentChild = null;
+
+// MESSAGE
+function showMsg(t, ok=true){
+  msg.innerText = t;
+  msg.style.color = ok ? "green" : "red";
+}
+
+// NAVIGATION
+function goRegister(){
+  window.location.href = "sam.html";
+}
+
+function showSearch(){
+  searchBox.classList.remove("hidden");
+}
+
+// SEARCH
+async function searchChild(){
+
+  let id = document.getElementById("search_id").value.trim().toUpperCase();
+
+  if (!id) return showMsg("Enter Child ID", false);
+
+  showMsg("Searching...");
+
+  let snap = await db.collection("otp_children")
+    .where("child_id","==",id)
+    .get();
+
+  if (snap.empty){
+    showMsg("Child not found", false);
+    return;
+  }
+
+  snap.forEach(doc=>{
+    currentDocId = doc.id;
+    currentChild = doc.data();
+  });
+
+  document.getElementById("profile").innerHTML = `
+    <b>${currentChild.child_id}</b><br>
+    ${currentChild.name} (${currentChild.gender})<br>
+    Age: ${currentChild.age} months
+  `;
+
+  profile.classList.remove("hidden");
+  actions.classList.remove("hidden");
+
+  showMsg("✔ Child Loaded");
+}
+
+// MODIFY
+function modifyCase(){
+
+  let newName = prompt("Edit Name", currentChild.name);
+  if (!newName) return;
+
+  db.collection("otp_children").doc(currentDocId).update({
+    name: newName
+  });
+
+  showMsg("✔ Updated");
+}
+
+// DELETE
+async function deleteCase(){
+
+  if (!confirm("Delete this case?")) return;
+
+  await db.collection("otp_children").doc(currentDocId).delete();
+
+  showMsg("✔ Deleted");
+  location.reload();
+}
+
+// VISIT
+function showVisit(){
+  visitForm.classList.remove("hidden");
+  dischargeForm.classList.add("hidden");
+}
+
+// DISCHARGE
+function showDischarge(){
+  dischargeForm.classList.remove("hidden");
+  visitForm.classList.add("hidden");
+}
+
+// SAVE VISIT
+async function saveVisit(){
+
+  let vno = document.getElementById("visit_no").value;
+  let date = document.getElementById("visit_date").value;
+  let muac = document.getElementById("muac").value;
+  let weight = document.getElementById("weight").value;
+
+  if (!vno || !date || !muac || !weight)
+    return showMsg("Fill visit fields", false);
+
+  await db.collection("otp_visits").add({
+    child_id: currentChild.child_id,
+    visit_no: parseInt(vno),
+    date,
+    muac,
+    weight
+  });
+
+  showMsg("✔ Visit Saved");
+}
+
+// SAVE OUTCOME
+async function saveOutcome(){
+
+  let outcome = document.getElementById("outcome").value;
+  let date = document.getElementById("discharge_date").value;
+
+  if (!outcome || !date)
+    return showMsg("Fill discharge fields", false);
+
+  await db.collection("otp_outcomes").add({
+    child_id: currentChild.child_id,
+    outcome,
+    date
+  });
+
+  showMsg("✔ Case Discharged");
+}
+
+</script>
 
 </body>
 </html>
