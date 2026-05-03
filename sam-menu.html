@@ -3,104 +3,174 @@
 <head>
   <title>SAM Module</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    body { font-family: Arial; max-width: 750px; margin:auto; padding:15px; background:#f4f4f4;}
+    body { font-family: Arial; max-width: 1000px; margin:auto; padding:15px; background:#f4f4f4;}
     .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
     input, select { width:100%; padding:10px; margin:5px 0; }
-    button { width:100%; padding:12px; margin-top:5px; cursor:pointer; }
-    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
+
+    .btn-row {
+      display:flex;
+      gap:10px;
+      margin-top:15px;
+    }
+
+    .btn-row button {
+      flex:1;
+      padding:12px;
+      cursor:pointer;
+    }
+
+    table {
+      width:100%;
+      border-collapse: collapse;
+      margin-top:10px;
+    }
+
+    th, td {
+      border:1px solid #ccc;
+      padding:8px;
+      text-align:center;
+    }
+
+    #msg {
+      text-align:center;
+      font-weight:bold;
+      padding:10px;
+      border-radius:5px;
+    }
+
+    .success { background:#e8f5e9; color:green; }
+    .error { background:#ffebee; color:red; }
+
     .hidden { display:none; }
-    #profile { background:#e3f2fd; padding:10px; }
   </style>
 </head>
 
 <body>
 
 <h2>SAM Module</h2>
+
 <div id="msg"></div>
 
-<!-- MAIN -->
 <div class="card">
-  <button onclick="goRegister()">1. Register New SAM Case</button>
-  <button onclick="showSearch()">2. Search Existing Case</button>
+  <button onclick="goRegister()">Register New SAM Case</button>
+  <button onclick="showSearch()">Search Existing Case</button>
 </div>
 
-<!-- SEARCH -->
 <div id="searchBox" class="card hidden">
   <input id="search_id" placeholder="Enter Child ID">
   <button onclick="searchChild()">Search</button>
 </div>
 
-<!-- PROFILE -->
-<div id="profile" class="hidden"></div>
+<div id="formSection" class="card hidden">
 
-<!-- ACTIONS -->
-<div id="actions" class="card hidden">
-  <button onclick="showModify()">Modify Case</button>
-  <button onclick="deleteCase()">Delete Case</button>
-  <button onclick="showVisit()">Add Visit</button>
-  <button onclick="showDischarge()">Discharge Case</button>
+<h3>SAM Case Form</h3>
+
+<input id="name" placeholder="Name">
+<input id="father" placeholder="Father">
+
+<select id="gender">
+  <option value="">Gender</option>
+  <option>Male</option>
+  <option>Female</option>
+</select>
+
+<input id="dob" type="date">
+<input id="admission_date" type="date">
+<input id="age" readonly>
+
+<input id="contact" placeholder="Contact">
+<input id="village" placeholder="Village">
+
+<input id="muac" placeholder="MUAC">
+<input id="weight" placeholder="Weight">
+<input id="height" placeholder="Height">
+
+<select id="edema">
+  <option value="">Edema</option>
+  <option>0</option><option>+</option><option>++</option><option>+++</option>
+</select>
+
+<select id="appetite">
+  <option value="">Appetite</option>
+  <option>Pass</option><option>Fail</option>
+</select>
+
+<select id="admission_type"></select>
+
+<select id="complications">
+  <option>No</option><option>Yes</option>
+</select>
+
+<input id="complication_detail" placeholder="If yes, specify">
+
+<div class="btn-row">
+  <button onclick="updateCase()">Modify</button>
+  <button onclick="deleteCase()">Delete</button>
+  <button onclick="addVisit()">Add Visit</button>
+  <button onclick="dischargeCase()">Discharge</button>
 </div>
 
-<!-- MODIFY -->
-<div id="modifyForm" class="card hidden">
-  <h3>Modify Case</h3>
-  <input id="m_name" placeholder="Name">
-  <input id="m_father" placeholder="Father">
-  <input id="m_contact" placeholder="Contact">
-  <button onclick="updateCase()">Update</button>
 </div>
 
-<!-- VISIT -->
+<!-- VISIT FORM -->
 <div id="visitForm" class="card hidden">
-  <h3>Add Visit</h3>
 
-  <input id="visit_no" readonly>
-  <input id="visit_date" type="date">
+<h3>Add Visit</h3>
 
-  <input id="muac" placeholder="MUAC">
-  <input id="weight" placeholder="Weight">
+<input id="visit_no" readonly>
+<input id="visit_date" type="date">
 
-  <select id="edema">
-    <option value="">Edema</option>
-    <option>0</option><option>+</option><option>++</option><option>+++</option>
-  </select>
+<input id="v_muac" placeholder="MUAC">
+<input id="v_weight" placeholder="Weight">
 
-  <select id="appetite">
-    <option value="">Appetite</option>
-    <option>Pass</option><option>Fail</option>
-  </select>
+<select id="v_edema">
+  <option value="">Edema</option>
+  <option>0</option><option>+</option><option>++</option><option>+++</option>
+</select>
 
-  <select id="complications">
-    <option value="">Complications</option>
-    <option>No</option><option>Yes</option>
-  </select>
+<select id="v_appetite">
+  <option value="">Appetite</option>
+  <option>Pass</option><option>Fail</option>
+</select>
 
-  <input id="rutf_total" placeholder="Total Sachets">
-  <input id="rutf_daily" placeholder="Sachets per Day">
+<select id="v_complications">
+  <option>No</option><option>Yes</option>
+</select>
 
-  <button onclick="saveVisit()">Save Visit</button>
+<input id="rutf_total" placeholder="Total Sachets">
+<input id="rutf_daily" placeholder="Per Day">
+
+<button onclick="saveVisit()">Save Visit</button>
+
+</div>
+
+<!-- VISITS -->
+<div id="visitSection" class="card hidden">
+  <h3>Visit History</h3>
+  <table id="visitTable">
+    <thead>
+      <tr>
+        <th>Visit</th><th>Date</th><th>MUAC</th><th>Weight</th>
+        <th>Edema</th><th>Appetite</th><th>Comp</th><th>RUTF</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- CHART -->
+<div id="chartSection" class="card hidden">
+  <h3>Growth Chart</h3>
+  <canvas id="chart"></canvas>
 </div>
 
 <!-- DISCHARGE -->
-<div id="dischargeForm" class="card hidden">
-  <h3>Discharge</h3>
-
-  <select id="outcome" onchange="toggleOther()">
-    <option value="">Select Outcome</option>
-    <option>Cured</option>
-    <option>Default</option>
-    <option>Death</option>
-    <option>Non-Responder</option>
-    <option>Referred to NSC</option>
-    <option>Other</option>
-  </select>
-
-  <input id="other_outcome" placeholder="Specify other" class="hidden">
-
-  <input id="discharge_date" type="date">
-
-  <button onclick="saveOutcome()">Save Discharge</button>
+<div id="dischargeSection" class="card hidden">
+  <h3>Discharge Status</h3>
+  <div id="dischargeInfo"></div>
 </div>
 
 <!-- Firebase -->
@@ -118,188 +188,211 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let currentDocId = null;
-let currentChild = null;
-let isAdmin = true; // change to false for normal users
+let currentDocId=null;
+let currentChildId=null;
+let chartInstance=null;
 
-function showMsg(t, ok=true){
-  msg.innerText = t;
-  msg.style.color = ok ? "green" : "red";
+function showMsg(t,type="success"){
+  msg.innerText=t;
+  msg.className=type;
 }
 
 function goRegister(){ window.location.href="sam.html"; }
 function showSearch(){ searchBox.classList.remove("hidden"); }
 
-// SEARCH
 async function searchChild(){
 
-  let id = search_id.value.trim().toUpperCase();
-  if (!id) return showMsg("Enter Child ID", false);
+  let id=search_id.value.trim().toUpperCase();
+  if(!id) return showMsg("❌ Enter ID","error");
 
-  let snap = await db.collection("otp_children")
-    .where("child_id","==",id)
-    .get();
-
-  if (snap.empty) return showMsg("Child not found", false);
+  let snap=await db.collection("otp_children").where("child_id","==",id).get();
+  if(snap.empty) return showMsg("❌ Not found","error");
 
   snap.forEach(doc=>{
-    currentDocId = doc.id;
-    currentChild = doc.data();
+    currentDocId=doc.id;
+    let d=doc.data();
+    currentChildId=d.child_id;
+
+    name.value=d.name;
+    father.value=d.father;
+    gender.value=d.gender;
+    dob.value=d.dob;
+    admission_date.value=d.admission_date;
+    age.value=d.age;
+    contact.value=d.contact;
+    village.value=d.village;
+    muac.value=d.muac;
+    weight.value=d.weight;
+    height.value=d.height;
+    edema.value=d.edema;
+    appetite.value=d.appetite;
+    admission_type.value=d.admission_type;
+    complications.value=d.complications;
+    complication_detail.value=d.complication_detail;
   });
 
-  profile.innerHTML = `<b>${currentChild.child_id}</b><br>${currentChild.name}`;
-  profile.classList.remove("hidden");
+  formSection.classList.remove("hidden");
 
-  await checkLock();
+  loadVisits();
+  loadGrowthChart();
+  loadDischarge();
 
-  showMsg("✔ Child Loaded");
+  showMsg("✔ Case Loaded");
 }
 
-// LOCK CHECK
-async function checkLock(){
+// VISITS
+async function loadVisits(){
+  let snap=await db.collection("otp_visits").where("child_id","==",currentChildId).orderBy("visit_no").get();
+  let tbody=document.querySelector("#visitTable tbody");
+  tbody.innerHTML="";
+  snap.forEach(doc=>{
+    let v=doc.data();
+    tbody.innerHTML+=`<tr>
+      <td>${v.visit_no}</td>
+      <td>${v.date}</td>
+      <td>${v.muac}</td>
+      <td>${v.weight}</td>
+      <td>${v.edema}</td>
+      <td>${v.appetite}</td>
+      <td>${v.complications}</td>
+      <td>${v.rutf_total}</td>
+    </tr>`;
+  });
+  visitSection.classList.remove("hidden");
+}
 
-  let snap = await db.collection("otp_outcomes")
-    .where("child_id","==",currentChild.child_id)
+// CHART
+async function loadGrowthChart(){
+
+  let snap=await db.collection("otp_visits")
+    .where("child_id","==",currentChildId)
+    .orderBy("visit_no")
     .get();
 
-  let discharged = !snap.empty;
+  let visits=[], muac=[], weight=[];
 
-  if (discharged && !isAdmin){
-    actions.classList.add("hidden");
-    showMsg("⚠ Case locked after discharge", false);
-  } else {
-    actions.classList.remove("hidden");
-  }
-}
-
-// MODIFY
-function showModify(){
-  modifyForm.classList.remove("hidden");
-  m_name.value = currentChild.name;
-  m_father.value = currentChild.father;
-  m_contact.value = currentChild.contact;
-}
-
-async function updateCase(){
-  await db.collection("otp_children").doc(currentDocId).update({
-    name: m_name.value,
-    father: m_father.value,
-    contact: m_contact.value
+  snap.forEach(doc=>{
+    let v=doc.data();
+    visits.push(v.visit_no);
+    muac.push(parseFloat(v.muac));
+    weight.push(parseFloat(v.weight));
   });
-  showMsg("✔ Updated");
+
+  if(visits.length===0) return;
+
+  if(chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(document.getElementById("chart"), {
+    type:'line',
+    data:{
+      labels:visits,
+      datasets:[
+        {label:"MUAC", data:muac},
+        {label:"Weight", data:weight}
+      ]
+    }
+  });
+
+  chartSection.classList.remove("hidden");
 }
 
-// DELETE
-async function deleteCase(){
-  if (!confirm("Are you sure to delete this case?")) return;
-
-  await db.collection("otp_children").doc(currentDocId).delete();
-
-  showMsg("✔ Deleted");
-  location.reload();
-}
-
-// VISIT
-async function showVisit(){
+// VISIT BUTTON
+async function addVisit(){
 
   visitForm.classList.remove("hidden");
 
   let snap = await db.collection("otp_visits")
-    .where("child_id","==",currentChild.child_id)
+    .where("child_id","==",currentChildId)
     .get();
 
-  let nextVisit = snap.size + 2;
-
-  if (nextVisit > 11)
-    return showMsg("Max visits reached", false);
-
-  visit_no.value = nextVisit;
+  visit_no.value = snap.size + 2;
 }
 
-// VALIDATION
-function validateVisit(){
-
-  let muacVal = parseFloat(muac.value);
-  let edemaVal = edema.value;
-
-  if (muacVal >= 11.5 && muacVal < 12.5 && edemaVal==="0")
-    return "MAM case → move to MAM";
-
-  if (muacVal >= 12.5 && edemaVal==="0")
-    return "Normal child";
-
-  if (edemaVal==="+++")
-    return "Refer to NSC";
-
-  if (complications.value==="Yes")
-    return "Complicated → refer NSC";
-
-  if (appetite.value==="Fail")
-    return "Appetite fail → refer NSC";
-
-  return null;
-}
-
-// SAVE VISIT
+// SAVE VISIT (WITH 7 DAY RULE)
 async function saveVisit(){
 
-  if (!visit_date.value || !muac.value || !weight.value)
-    return showMsg("Fill required fields", false);
+  if (!visit_date.value || !v_muac.value || !v_weight.value)
+    return showMsg("❌ Fill required fields","error");
 
-  let v = validateVisit();
-  if (v) return showMsg(v, false);
+  let selectedDate = new Date(visit_date.value);
+
+  let snap = await db.collection("otp_visits")
+    .where("child_id","==",currentChildId)
+    .orderBy("visit_no","desc")
+    .limit(1)
+    .get();
+
+  let minDate;
+
+  if (snap.empty){
+    let admissionDate = new Date(admission_date.value);
+    minDate = new Date(admissionDate);
+    minDate.setDate(minDate.getDate() + 7);
+  } else {
+    snap.forEach(doc=>{
+      let last = new Date(doc.data().date);
+      minDate = new Date(last);
+      minDate.setDate(minDate.getDate() + 7);
+    });
+  }
+
+  if (selectedDate < minDate)
+    return showMsg("❌ Visit must be ≥7 days after last visit","error");
 
   await db.collection("otp_visits").add({
-    child_id: currentChild.child_id,
+    child_id: currentChildId,
     visit_no: parseInt(visit_no.value),
     date: visit_date.value,
-    muac: muac.value,
-    weight: weight.value,
-    edema: edema.value,
-    appetite: appetite.value,
-    complications: complications.value,
+    muac: v_muac.value,
+    weight: v_weight.value,
+    edema: v_edema.value,
+    appetite: v_appetite.value,
+    complications: v_complications.value,
     rutf_total: rutf_total.value,
     rutf_daily: rutf_daily.value
   });
 
   showMsg("✔ Visit Saved");
+
+  loadVisits();
+  loadGrowthChart();
 }
 
-// DISCHARGE UI
-function showDischarge(){
-  dischargeForm.classList.remove("hidden");
-  visitForm.classList.add("hidden");
-}
+// DISCHARGE
+async function loadDischarge(){
 
-function toggleOther(){
-  if (outcome.value==="Other"){
-    other_outcome.classList.remove("hidden");
-  } else {
-    other_outcome.classList.add("hidden");
-  }
-}
+  let snap=await db.collection("otp_outcomes").where("child_id","==",currentChildId).get();
 
-// SAVE DISCHARGE
-async function saveOutcome(){
+  if(snap.empty) return;
 
-  let out = outcome.value;
-
-  if (out==="Other"){
-    out = other_outcome.value;
-  }
-
-  if (!out || !discharge_date.value)
-    return showMsg("Fill discharge fields", false);
-
-  await db.collection("otp_outcomes").add({
-    child_id: currentChild.child_id,
-    outcome: out,
-    date: discharge_date.value
+  snap.forEach(doc=>{
+    let d=doc.data();
+    dischargeInfo.innerHTML=`Outcome: ${d.outcome}<br>Date: ${d.date}`;
   });
 
-  showMsg("✔ Discharged");
+  dischargeSection.classList.remove("hidden");
+}
 
-  await checkLock();
+// MODIFY
+async function updateCase(){
+  await db.collection("otp_children").doc(currentDocId).update({
+    name:name.value,
+    father:father.value
+  });
+  showMsg("✔ Case Modified");
+}
+
+// DELETE
+async function deleteCase(){
+  if(!confirm("Delete?")) return;
+  await db.collection("otp_children").doc(currentDocId).delete();
+  showMsg("✔ Deleted");
+  location.reload();
+}
+
+// PLACEHOLDER
+function dischargeCase(){
+  showMsg("✔ Add discharge form here");
 }
 
 </script>
