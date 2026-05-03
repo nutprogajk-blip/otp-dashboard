@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SAM Menu</title>
+  <title>SAM Module</title>
 
   <style>
-    body { font-family: Arial; max-width: 700px; margin:auto; padding:15px; background:#f4f4f4;}
+    body { font-family: Arial; max-width: 750px; margin:auto; padding:15px; background:#f4f4f4;}
     .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
     input, select { width:100%; padding:10px; margin:5px 0; }
     button { width:100%; padding:12px; margin-top:5px; cursor:pointer; }
     #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
     .hidden { display:none; }
-    #profile { background:#e3f2fd; padding:10px; margin-top:10px; }
+    #profile { background:#e3f2fd; padding:10px; }
   </style>
 </head>
 
 <body>
 
 <h2>SAM Module</h2>
-
 <div id="msg"></div>
 
-<!-- MAIN OPTIONS -->
+<!-- MAIN -->
 <div class="card">
   <button onclick="goRegister()">1. Register New SAM Case</button>
   <button onclick="showSearch()">2. Search Existing Case</button>
@@ -28,8 +27,7 @@
 
 <!-- SEARCH -->
 <div id="searchBox" class="card hidden">
-  <h3>Search Case</h3>
-  <input id="search_id" placeholder="Enter Child ID (ALI-03123456789)">
+  <input id="search_id" placeholder="Enter Child ID">
   <button onclick="searchChild()">Search</button>
 </div>
 
@@ -38,20 +36,28 @@
 
 <!-- ACTIONS -->
 <div id="actions" class="card hidden">
-
-  <button onclick="modifyCase()">Modify Case</button>
+  <button onclick="showModify()">Modify Case</button>
   <button onclick="deleteCase()">Delete Case</button>
   <button onclick="showVisit()">Add Visit</button>
   <button onclick="showDischarge()">Discharge Case</button>
-
 </div>
 
-<!-- VISIT FORM -->
+<!-- MODIFY -->
+<div id="modifyForm" class="card hidden">
+  <h3>Modify Case</h3>
+  <input id="m_name" placeholder="Name">
+  <input id="m_father" placeholder="Father">
+  <input id="m_contact" placeholder="Contact">
+  <button onclick="updateCase()">Update</button>
+</div>
+
+<!-- VISIT -->
 <div id="visitForm" class="card hidden">
   <h3>Add Visit</h3>
 
-  <input id="visit_no" placeholder="Visit No (1–11)">
+  <input id="visit_no" readonly>
   <input id="visit_date" type="date">
+
   <input id="muac" placeholder="MUAC">
   <input id="weight" placeholder="Weight">
 
@@ -70,26 +76,31 @@
     <option>No</option><option>Yes</option>
   </select>
 
-  <input id="rutf" placeholder="RUTF Given">
+  <input id="rutf_total" placeholder="Total Sachets">
+  <input id="rutf_daily" placeholder="Sachets per Day">
 
   <button onclick="saveVisit()">Save Visit</button>
 </div>
 
 <!-- DISCHARGE -->
 <div id="dischargeForm" class="card hidden">
-  <h3>Discharge Case</h3>
+  <h3>Discharge</h3>
 
-  <select id="outcome">
-    <option value="">Outcome</option>
+  <select id="outcome" onchange="toggleOther()">
+    <option value="">Select Outcome</option>
     <option>Cured</option>
     <option>Default</option>
     <option>Death</option>
     <option>Non-Responder</option>
+    <option>Referred to NSC</option>
+    <option>Other</option>
   </select>
+
+  <input id="other_outcome" placeholder="Specify other" class="hidden">
 
   <input id="discharge_date" type="date">
 
-  <button onclick="saveOutcome()">Save Outcome</button>
+  <button onclick="saveOutcome()">Save Discharge</button>
 </div>
 
 <!-- Firebase -->
@@ -109,74 +120,78 @@ const db = firebase.firestore();
 
 let currentDocId = null;
 let currentChild = null;
+let isAdmin = true; // change to false for normal users
 
-// MESSAGE
 function showMsg(t, ok=true){
   msg.innerText = t;
   msg.style.color = ok ? "green" : "red";
 }
 
-// NAVIGATION
-function goRegister(){
-  window.location.href = "sam.html";
-}
-
-function showSearch(){
-  searchBox.classList.remove("hidden");
-}
+function goRegister(){ window.location.href="sam.html"; }
+function showSearch(){ searchBox.classList.remove("hidden"); }
 
 // SEARCH
 async function searchChild(){
 
-  let id = document.getElementById("search_id").value.trim().toUpperCase();
-
+  let id = search_id.value.trim().toUpperCase();
   if (!id) return showMsg("Enter Child ID", false);
-
-  showMsg("Searching...");
 
   let snap = await db.collection("otp_children")
     .where("child_id","==",id)
     .get();
 
-  if (snap.empty){
-    showMsg("Child not found", false);
-    return;
-  }
+  if (snap.empty) return showMsg("Child not found", false);
 
   snap.forEach(doc=>{
     currentDocId = doc.id;
     currentChild = doc.data();
   });
 
-  document.getElementById("profile").innerHTML = `
-    <b>${currentChild.child_id}</b><br>
-    ${currentChild.name} (${currentChild.gender})<br>
-    Age: ${currentChild.age} months
-  `;
-
+  profile.innerHTML = `<b>${currentChild.child_id}</b><br>${currentChild.name}`;
   profile.classList.remove("hidden");
-  actions.classList.remove("hidden");
+
+  await checkLock();
 
   showMsg("✔ Child Loaded");
 }
 
+// LOCK CHECK
+async function checkLock(){
+
+  let snap = await db.collection("otp_outcomes")
+    .where("child_id","==",currentChild.child_id)
+    .get();
+
+  let discharged = !snap.empty;
+
+  if (discharged && !isAdmin){
+    actions.classList.add("hidden");
+    showMsg("⚠ Case locked after discharge", false);
+  } else {
+    actions.classList.remove("hidden");
+  }
+}
+
 // MODIFY
-function modifyCase(){
+function showModify(){
+  modifyForm.classList.remove("hidden");
+  m_name.value = currentChild.name;
+  m_father.value = currentChild.father;
+  m_contact.value = currentChild.contact;
+}
 
-  let newName = prompt("Edit Name", currentChild.name);
-  if (!newName) return;
-
-  db.collection("otp_children").doc(currentDocId).update({
-    name: newName
+async function updateCase(){
+  await db.collection("otp_children").doc(currentDocId).update({
+    name: m_name.value,
+    father: m_father.value,
+    contact: m_contact.value
   });
-
   showMsg("✔ Updated");
 }
 
 // DELETE
 async function deleteCase(){
-
-  if (!confirm("Delete this case?")) return;
+  if (!confirm("Are you sure to delete this case?")) return;
 
   await db.collection("otp_children").doc(currentDocId).delete();
 
@@ -185,55 +200,106 @@ async function deleteCase(){
 }
 
 // VISIT
-function showVisit(){
+async function showVisit(){
+
   visitForm.classList.remove("hidden");
-  dischargeForm.classList.add("hidden");
+
+  let snap = await db.collection("otp_visits")
+    .where("child_id","==",currentChild.child_id)
+    .get();
+
+  let nextVisit = snap.size + 2;
+
+  if (nextVisit > 11)
+    return showMsg("Max visits reached", false);
+
+  visit_no.value = nextVisit;
 }
 
-// DISCHARGE
-function showDischarge(){
-  dischargeForm.classList.remove("hidden");
-  visitForm.classList.add("hidden");
+// VALIDATION
+function validateVisit(){
+
+  let muacVal = parseFloat(muac.value);
+  let edemaVal = edema.value;
+
+  if (muacVal >= 11.5 && muacVal < 12.5 && edemaVal==="0")
+    return "MAM case → move to MAM";
+
+  if (muacVal >= 12.5 && edemaVal==="0")
+    return "Normal child";
+
+  if (edemaVal==="+++")
+    return "Refer to NSC";
+
+  if (complications.value==="Yes")
+    return "Complicated → refer NSC";
+
+  if (appetite.value==="Fail")
+    return "Appetite fail → refer NSC";
+
+  return null;
 }
 
 // SAVE VISIT
 async function saveVisit(){
 
-  let vno = document.getElementById("visit_no").value;
-  let date = document.getElementById("visit_date").value;
-  let muac = document.getElementById("muac").value;
-  let weight = document.getElementById("weight").value;
+  if (!visit_date.value || !muac.value || !weight.value)
+    return showMsg("Fill required fields", false);
 
-  if (!vno || !date || !muac || !weight)
-    return showMsg("Fill visit fields", false);
+  let v = validateVisit();
+  if (v) return showMsg(v, false);
 
   await db.collection("otp_visits").add({
     child_id: currentChild.child_id,
-    visit_no: parseInt(vno),
-    date,
-    muac,
-    weight
+    visit_no: parseInt(visit_no.value),
+    date: visit_date.value,
+    muac: muac.value,
+    weight: weight.value,
+    edema: edema.value,
+    appetite: appetite.value,
+    complications: complications.value,
+    rutf_total: rutf_total.value,
+    rutf_daily: rutf_daily.value
   });
 
   showMsg("✔ Visit Saved");
 }
 
-// SAVE OUTCOME
+// DISCHARGE UI
+function showDischarge(){
+  dischargeForm.classList.remove("hidden");
+  visitForm.classList.add("hidden");
+}
+
+function toggleOther(){
+  if (outcome.value==="Other"){
+    other_outcome.classList.remove("hidden");
+  } else {
+    other_outcome.classList.add("hidden");
+  }
+}
+
+// SAVE DISCHARGE
 async function saveOutcome(){
 
-  let outcome = document.getElementById("outcome").value;
-  let date = document.getElementById("discharge_date").value;
+  let out = outcome.value;
 
-  if (!outcome || !date)
+  if (out==="Other"){
+    out = other_outcome.value;
+  }
+
+  if (!out || !discharge_date.value)
     return showMsg("Fill discharge fields", false);
 
   await db.collection("otp_outcomes").add({
     child_id: currentChild.child_id,
-    outcome,
-    date
+    outcome: out,
+    date: discharge_date.value
   });
 
-  showMsg("✔ Case Discharged");
+  showMsg("✔ Discharged");
+
+  await checkLock();
 }
 
 </script>
