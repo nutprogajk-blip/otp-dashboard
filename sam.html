@@ -4,42 +4,25 @@
   <title>SAM Registration</title>
 
   <style>
-    body {
-      font-family: Arial;
-      max-width: 500px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: green;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    #msg {
-      margin: 10px 0;
-      font-weight: bold;
-      text-align: center;
-    }
+    body { font-family: Arial; max-width: 600px; margin:auto; padding:15px; background:#f4f4f4;}
+    .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
+    input, select { width:100%; padding:10px; margin:5px 0; }
+    button { width:100%; padding:12px; background:green; color:white; border:none; cursor:pointer; }
+    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
+    #child_id_box { background:#e8f5e9; padding:10px; margin-bottom:10px; font-weight:bold; text-align:center; }
   </style>
 </head>
 
 <body>
 
-<h2>SAM Registration</h2>
+<h2>SAM Case Registration</h2>
 
+<div id="child_id_box">Child ID: -</div>
 <div id="msg"></div>
+
+<!-- CHILD INFO -->
+<div class="card">
+<h3>Child Information</h3>
 
 <input id="name" placeholder="Child Name *">
 <input id="father" placeholder="Father Name *">
@@ -50,22 +33,73 @@
   <option>Female</option>
 </select>
 
+<label>Date of Birth *</label>
 <input id="dob" type="date">
+
+<label>Admission Date *</label>
 <input id="admission_date" type="date">
+
 <input id="age" placeholder="Age (months)" readonly>
 
 <input id="contact" placeholder="Contact (11 digits) *">
 <input id="village" placeholder="Village *">
+</div>
+
+<!-- ADMISSION -->
+<div class="card">
+<h3>Admission Details</h3>
+
+<input id="muac" placeholder="MUAC (cm) *">
+<input id="weight" placeholder="Weight (kg) *">
+<input id="height" placeholder="Height (cm) *">
+
+<select id="edema">
+  <option value="">Edema *</option>
+  <option>0</option>
+  <option>+</option>
+  <option>++</option>
+  <option>+++</option>
+</select>
+
+<select id="appetite">
+  <option value="">Appetite Test *</option>
+  <option>Pass</option>
+  <option>Fail</option>
+</select>
+
+<select id="admission_type">
+  <option value="">Admission Type *</option>
+  <option>New - Red MUAC</option>
+  <option>New - Edema</option>
+  <option>Readmission - Relapse</option>
+  <option>Readmission - Default</option>
+  <option>Other</option>
+  <option>Transfer from NSC</option>
+</select>
+</div>
+
+<!-- MEDICAL -->
+<div class="card">
+<h3>Medical</h3>
+
+<select id="complications">
+  <option value="">Complications *</option>
+  <option>No</option>
+  <option>Yes</option>
+</select>
+
+<input id="complication_detail" placeholder="If yes, specify">
+</div>
 
 <button id="btn">Register</button>
 
-<!-- Firebase v8 -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
 
-// 🔥 Firebase config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
@@ -76,89 +110,135 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // MESSAGE
-function showMsg(text, ok=true){
+function showMsg(t, ok=true){
   const m = document.getElementById("msg");
-  m.innerText = text;
+  m.innerText = t;
   m.style.color = ok ? "green" : "red";
 }
 
-// AGE CALCULATION
+// AGE
 function calcAge(){
-  const dob = document.getElementById("dob").value;
-  const adm = document.getElementById("admission_date").value;
+  let dob = document.getElementById("dob").value;
+  let adm = document.getElementById("admission_date").value;
 
   if (!dob || !adm) return;
 
   let d = new Date(dob);
   let a = new Date(adm);
 
-  let months = (a.getFullYear() - d.getFullYear()) * 12;
-  months += (a.getMonth() - d.getMonth());
+  let m = (a.getFullYear()-d.getFullYear())*12;
+  m += (a.getMonth()-d.getMonth());
 
-  document.getElementById("age").value = months;
+  document.getElementById("age").value = m;
 }
 
-// attach events
+// CHILD ID GENERATOR
+function generateChildID(){
+
+  let name = document.getElementById("name").value.trim();
+  let contact = document.getElementById("contact").value.trim();
+
+  if (!name || contact.length !== 11){
+    document.getElementById("child_id_box").innerText = "Child ID: -";
+    return;
+  }
+
+  let firstName = name.split(" ")[0].toUpperCase();
+  let id = firstName + "-" + contact;
+
+  document.getElementById("child_id_box").innerText = "Child ID: " + id;
+}
+
+// EVENTS
 document.getElementById("dob").addEventListener("change", calcAge);
 document.getElementById("admission_date").addEventListener("change", calcAge);
+document.getElementById("name").addEventListener("input", generateChildID);
+document.getElementById("contact").addEventListener("input", generateChildID);
 
-// BUTTON CLICK
+// VALIDATION FUNCTION
+function validateSAM(data){
+
+  let muac = parseFloat(data.muac);
+  let edema = data.edema;
+
+  if (muac >= 11.5 && muac < 12.5 && edema === "0"){
+    return { ok:false, msg:"⚠ MAM child → register under MAM" };
+  }
+
+  if (muac >= 12.5 && edema === "0"){
+    return { ok:false, msg:"⚠ Normal child → no registration needed" };
+  }
+
+  if (edema === "+++"){
+    return { ok:false, msg:"⚠ Severe edema (+++) → refer NSC" };
+  }
+
+  if (data.complications === "Yes"){
+    return { ok:false, msg:"⚠ Complicated SAM → refer NSC" };
+  }
+
+  if (data.appetite === "Fail"){
+    return { ok:false, msg:"⚠ Appetite fail → refer NSC" };
+  }
+
+  return { ok:true };
+}
+
+// REGISTER
 document.getElementById("btn").addEventListener("click", async function(){
 
   showMsg("Processing...");
 
-  // GET VALUES SAFELY
-  let name = document.getElementById("name").value.trim();
-  let father = document.getElementById("father").value.trim();
-  let gender = document.getElementById("gender").value;
-  let contact = document.getElementById("contact").value.trim();
-  let village = document.getElementById("village").value.trim();
-  let age = document.getElementById("age").value;
+  let data = {
+    name: document.getElementById("name").value.trim(),
+    father: document.getElementById("father").value.trim(),
+    gender: document.getElementById("gender").value,
+    dob: document.getElementById("dob").value,
+    admission_date: document.getElementById("admission_date").value,
+    age: parseInt(document.getElementById("age").value),
+    contact: document.getElementById("contact").value.trim(),
+    village: document.getElementById("village").value.trim(),
+    muac: document.getElementById("muac").value,
+    weight: document.getElementById("weight").value,
+    height: document.getElementById("height").value,
+    edema: document.getElementById("edema").value,
+    appetite: document.getElementById("appetite").value,
+    admission_type: document.getElementById("admission_type").value,
+    complications: document.getElementById("complications").value,
+    complication_detail: document.getElementById("complication_detail").value.trim()
+  };
 
-  // VALIDATION
-  if (!name || !father || !gender){
-    showMsg("Fill basic information", false);
-    return;
-  }
+  // BASIC VALIDATION
+  if (!data.name || !data.father || !data.gender)
+    return showMsg("Fill basic info", false);
 
-  if (!age || age < 6 || age > 59){
-    showMsg("Age must be between 6–59 months", false);
-    return;
-  }
+  if (data.age < 6 || data.age > 59)
+    return showMsg("Age must be 6–59 months", false);
 
-  if (!/^\d{11}$/.test(contact)){
-    showMsg("Contact must be 11 digits", false);
-    return;
-  }
+  if (!/^\d{11}$/.test(data.contact))
+    return showMsg("Invalid contact", false);
 
-  if (!village){
-    showMsg("Enter village", false);
-    return;
-  }
+  // CHILD ID
+  let firstName = data.name.split(" ")[0].toUpperCase();
+  data.child_id = firstName + "-" + data.contact;
 
+  // PROTOCOL VALIDATION
+  let result = validateSAM(data);
+  if (!result.ok) return showMsg(result.msg, false);
+
+  // SAVE
   try {
 
     await db.collection("otp_children").add({
-      name: name,
-      father: father,
-      gender: gender,
-      age: age,
-      contact: contact,
-      village: village,
+      ...data,
       createdAt: new Date()
     });
 
-    showMsg("✔ Registration Successful");
+    showMsg("✔ Registered Successfully");
 
-    // CLEAR FORM
-    document.querySelectorAll("input").forEach(i => i.value = "");
-    document.querySelectorAll("select").forEach(s => s.value = "");
-
-  } catch(e) {
-
+  } catch(e){
     console.error(e);
     showMsg("❌ " + e.message, false);
-
   }
 
 });
