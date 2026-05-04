@@ -3,65 +3,25 @@
 <head>
   <title>SAM Module</title>
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
-    body { font-family: Arial; max-width: 1000px; margin:auto; padding:15px; background:#f4f4f4;}
+    body { font-family: Arial; max-width: 800px; margin:auto; padding:15px; background:#f4f4f4;}
     .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
     input, select { width:100%; padding:10px; margin:5px 0; }
-
-    .btn-row { display:flex; gap:10px; margin-top:15px; }
-    .btn-row button { flex:1; padding:12px; cursor:pointer; }
-
-    table { width:100%; border-collapse: collapse; margin-top:10px; }
-    th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-
+    button { width:100%; padding:12px; margin-top:5px; cursor:pointer; }
+    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
     .hidden { display:none; }
-
-    /* POPUP */
-    .popup {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 15px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-      z-index: 999;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.3);
-    }
-
-    .popup.success { background:#e8f5e9; color:green; }
-    .popup.error { background:#ffebee; color:red; }
-
-    .close-btn {
-      background:none;
-      border:none;
-      font-size:16px;
-      cursor:pointer;
-      font-weight:bold;
-    }
   </style>
 </head>
 
 <body>
 
 <h2>SAM Module</h2>
-
-<!-- POPUP -->
-<div id="popup" class="popup hidden">
-  <span id="popupText"></span>
-  <button onclick="closePopup()" class="close-btn">✖</button>
-</div>
+<div id="msg"></div>
 
 <!-- MENU -->
 <div class="card">
-  <button onclick="goRegister()">Register New SAM Case</button>
-  <button onclick="showSearch()">Search Existing Case</button>
+  <button onclick="goRegister()">1. Register New SAM Case</button>
+  <button onclick="showSearch()">2. Search Existing Case</button>
 </div>
 
 <!-- SEARCH -->
@@ -70,13 +30,13 @@
   <button onclick="searchChild()">Search</button>
 </div>
 
-<!-- FORM -->
+<!-- FULL FORM (REUSED) -->
 <div id="formSection" class="card hidden">
 
 <h3>SAM Case Form</h3>
 
-<input id="name" placeholder="Name">
-<input id="father" placeholder="Father">
+<input id="name" placeholder="Child Name">
+<input id="father" placeholder="Father Name">
 
 <select id="gender">
   <option value="">Gender</option>
@@ -105,77 +65,26 @@
   <option>Pass</option><option>Fail</option>
 </select>
 
-<select id="admission_type"></select>
+<select id="admission_type">
+  <option value="">Admission Type</option>
+  <option>New - Red MUAC</option>
+  <option>New - Edema</option>
+  <option>Readmission - Relapse</option>
+  <option>Readmission - Default</option>
+  <option>Other</option>
+  <option>Transfer from NSC</option>
+</select>
 
 <select id="complications">
-  <option>No</option><option>Yes</option>
+  <option value="">Complications</option>
+  <option>No</option>
+  <option>Yes</option>
 </select>
 
 <input id="complication_detail" placeholder="If yes, specify">
 
-<div class="btn-row">
-  <button onclick="updateCase()">Modify</button>
-  <button onclick="deleteCase()">Delete</button>
-  <button onclick="addVisit()">Add Visit</button>
-  <button onclick="dischargeCase()">Discharge</button>
-</div>
+<button id="updateBtn" onclick="updateCase()">Update Case</button>
 
-</div>
-
-<!-- VISIT FORM -->
-<div id="visitForm" class="card hidden">
-<h3>Add Visit</h3>
-
-<input id="visit_no" readonly>
-<input id="visit_date" type="date">
-
-<input id="v_muac" placeholder="MUAC">
-<input id="v_weight" placeholder="Weight">
-
-<select id="v_edema">
-  <option value="">Edema</option>
-  <option>0</option><option>+</option><option>++</option><option>+++</option>
-</select>
-
-<select id="v_appetite">
-  <option value="">Appetite</option>
-  <option>Pass</option><option>Fail</option>
-</select>
-
-<select id="v_complications">
-  <option>No</option><option>Yes</option>
-</select>
-
-<input id="rutf_total" placeholder="Total Sachets">
-<input id="rutf_daily" placeholder="Per Day">
-
-<button onclick="saveVisit()">Save Visit</button>
-</div>
-
-<!-- VISIT HISTORY -->
-<div id="visitSection" class="card hidden">
-  <h3>Visit History</h3>
-  <table id="visitTable">
-    <thead>
-      <tr>
-        <th>Visit</th><th>Date</th><th>MUAC</th><th>Weight</th>
-        <th>Edema</th><th>Appetite</th><th>Comp</th><th>RUTF</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- CHART -->
-<div id="chartSection" class="card hidden">
-  <h3>Growth Chart</h3>
-  <canvas id="chart"></canvas>
-</div>
-
-<!-- DISCHARGE -->
-<div id="dischargeSection" class="card hidden">
-  <h3>Discharge Status</h3>
-  <div id="dischargeInfo"></div>
 </div>
 
 <!-- Firebase -->
@@ -193,224 +102,85 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let currentDocId=null;
-let currentChildId=null;
-let chartInstance=null;
+let currentDocId = null;
 
-// POPUP
-function showPopup(msg,type="success"){
-  popupText.innerText = msg;
-  popup.className = "popup " + type;
-  popup.classList.remove("hidden");
+function showMsg(t, ok=true){
+  msg.innerText = t;
+  msg.style.color = ok ? "green" : "red";
 }
 
-function closePopup(){
-  popup.classList.add("hidden");
+function goRegister(){
+  window.location.href="sam.html";
 }
 
-// NAV
-function goRegister(){ window.location.href="sam.html"; }
-function showSearch(){ searchBox.classList.remove("hidden"); }
+function showSearch(){
+  searchBox.classList.remove("hidden");
+}
 
-// SEARCH
+// SEARCH + FILL FORM
 async function searchChild(){
 
-  let id=search_id.value.trim().toUpperCase();
-  if(!id) return showPopup("❌ Enter ID","error");
+  let id = search_id.value.trim().toUpperCase();
 
-  let snap=await db.collection("otp_children").where("child_id","==",id).get();
-  if(snap.empty) return showPopup("❌ Not found","error");
+  if (!id) return showMsg("Enter ID", false);
+
+  let snap = await db.collection("otp_children")
+    .where("child_id","==",id)
+    .get();
+
+  if (snap.empty) return showMsg("Not found", false);
 
   snap.forEach(doc=>{
-    currentDocId=doc.id;
-    let d=doc.data();
-    currentChildId=d.child_id;
+    currentDocId = doc.id;
+    let d = doc.data();
 
-    name.value=d.name;
-    father.value=d.father;
-    gender.value=d.gender;
-    dob.value=d.dob;
-    admission_date.value=d.admission_date;
-    age.value=d.age;
-    contact.value=d.contact;
-    village.value=d.village;
-    muac.value=d.muac;
-    weight.value=d.weight;
-    height.value=d.height;
-    edema.value=d.edema;
-    appetite.value=d.appetite;
-    admission_type.value=d.admission_type;
-    complications.value=d.complications;
-    complication_detail.value=d.complication_detail;
+    // FILL FORM
+    name.value = d.name;
+    father.value = d.father;
+    gender.value = d.gender;
+    dob.value = d.dob;
+    admission_date.value = d.admission_date;
+    age.value = d.age;
+    contact.value = d.contact;
+    village.value = d.village;
+    muac.value = d.muac;
+    weight.value = d.weight;
+    height.value = d.height;
+    edema.value = d.edema;
+    appetite.value = d.appetite;
+    admission_type.value = d.admission_type;
+    complications.value = d.complications;
+    complication_detail.value = d.complication_detail;
   });
 
   formSection.classList.remove("hidden");
 
-  loadVisits();
-  loadGrowthChart();
-  loadDischarge();
-
-  showPopup("✔ Case Loaded");
+  showMsg("✔ Data Loaded");
 }
 
-// VISITS
-async function loadVisits(){
-  let snap=await db.collection("otp_visits").where("child_id","==",currentChildId).orderBy("visit_no").get();
-  let tbody=document.querySelector("#visitTable tbody");
-  tbody.innerHTML="";
-  snap.forEach(doc=>{
-    let v=doc.data();
-    tbody.innerHTML+=`<tr>
-      <td>${v.visit_no}</td>
-      <td>${v.date}</td>
-      <td>${v.muac}</td>
-      <td>${v.weight}</td>
-      <td>${v.edema}</td>
-      <td>${v.appetite}</td>
-      <td>${v.complications}</td>
-      <td>${v.rutf_total}</td>
-    </tr>`;
-  });
-  visitSection.classList.remove("hidden");
-}
-
-// CHART
-async function loadGrowthChart(){
-
-  let snap=await db.collection("otp_visits")
-    .where("child_id","==",currentChildId)
-    .orderBy("visit_no")
-    .get();
-
-  let visits=[], muac=[], weight=[];
-
-  snap.forEach(doc=>{
-    let v=doc.data();
-    visits.push(v.visit_no);
-    muac.push(parseFloat(v.muac));
-    weight.push(parseFloat(v.weight));
-  });
-
-  if(visits.length===0) return;
-
-  if(chartInstance) chartInstance.destroy();
-
-  chartInstance = new Chart(document.getElementById("chart"), {
-    type:'line',
-    data:{
-      labels:visits,
-      datasets:[
-        {label:"MUAC", data:muac},
-        {label:"Weight", data:weight}
-      ]
-    }
-  });
-
-  chartSection.classList.remove("hidden");
-}
-
-// ADD VISIT
-async function addVisit(){
-
-  visitForm.classList.remove("hidden");
-
-  let snap = await db.collection("otp_visits")
-    .where("child_id","==",currentChildId)
-    .get();
-
-  visit_no.value = snap.size + 2;
-}
-
-// SAVE VISIT
-async function saveVisit(){
-
-  if (!visit_date.value || !v_muac.value || !v_weight.value)
-    return showPopup("❌ Fill required fields","error");
-
-  let selectedDate = new Date(visit_date.value);
-
-  let snap = await db.collection("otp_visits")
-    .where("child_id","==",currentChildId)
-    .orderBy("visit_no","desc")
-    .limit(1)
-    .get();
-
-  let minDate;
-
-  if (snap.empty){
-    let admissionDate = new Date(admission_date.value);
-    minDate = new Date(admissionDate);
-    minDate.setDate(minDate.getDate() + 7);
-  } else {
-    snap.forEach(doc=>{
-      let last = new Date(doc.data().date);
-      minDate = new Date(last);
-      minDate.setDate(minDate.getDate() + 7);
-    });
-  }
-
-  if (selectedDate < minDate)
-    return showPopup("❌ Visit must be ≥7 days after last visit","error");
-
-  await db.collection("otp_visits").add({
-    child_id: currentChildId,
-    visit_no: parseInt(visit_no.value),
-    date: visit_date.value,
-    muac: v_muac.value,
-    weight: v_weight.value,
-    edema: v_edema.value,
-    appetite: v_appetite.value,
-    complications: v_complications.value,
-    rutf_total: rutf_total.value,
-    rutf_daily: rutf_daily.value
-  });
-
-  showPopup("✔ Visit Saved");
-
-  loadVisits();
-  loadGrowthChart();
-}
-
-// DISCHARGE
-async function loadDischarge(){
-
-  let snap=await db.collection("otp_outcomes").where("child_id","==",currentChildId).get();
-
-  if(snap.empty) return;
-
-  snap.forEach(doc=>{
-    let d=doc.data();
-    dischargeInfo.innerHTML=`Outcome: ${d.outcome}<br>Date: ${d.date}`;
-  });
-
-  dischargeSection.classList.remove("hidden");
-}
-
-// MODIFY
+// UPDATE
 async function updateCase(){
 
   await db.collection("otp_children").doc(currentDocId).update({
-    name:name.value,
-    father:father.value
+    name: name.value,
+    father: father.value,
+    gender: gender.value,
+    dob: dob.value,
+    admission_date: admission_date.value,
+    age: age.value,
+    contact: contact.value,
+    village: village.value,
+    muac: muac.value,
+    weight: weight.value,
+    height: height.value,
+    edema: edema.value,
+    appetite: appetite.value,
+    admission_type: admission_type.value,
+    complications: complications.value,
+    complication_detail: complication_detail.value
   });
 
-  showPopup("✔ Case Modified");
-}
-
-// DELETE
-async function deleteCase(){
-
-  if(!confirm("Delete this case?")) return;
-
-  await db.collection("otp_children").doc(currentDocId).delete();
-
-  showPopup("✔ Case Deleted");
-  location.reload();
-}
-
-// DISCHARGE BUTTON
-function dischargeCase(){
-  showPopup("⚠ Build discharge form next");
+  showMsg("✔ Case Updated Successfully");
 }
 
 </script>
