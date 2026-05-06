@@ -8,21 +8,46 @@
     input, select, button { width:100%; padding:10px; margin:5px 0; }
 
     .popup {
-      position: fixed; top:20px; left:50%; transform:translateX(-50%);
-      padding:15px 20px; border-radius:6px; font-weight:bold;
-      display:flex; gap:10px; align-items:center; z-index:999;
+      position: fixed;
+      top:20px; left:50%;
+      transform:translateX(-50%);
+      padding:15px 20px;
+      border-radius:6px;
+      font-weight:bold;
+      display:flex;
+      gap:10px;
+      z-index:999;
     }
+
     .popup.success { background:#e8f5e9; color:green; }
     .popup.error { background:#ffebee; color:red; }
 
     .confirm {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.5); display:flex;
-      justify-content:center; align-items:center; z-index:1000;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.5);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:1000;
     }
-    .confirm-content { background:white; padding:20px; border-radius:8px; text-align:center; width:300px; }
-    .confirm-buttons { display:flex; gap:10px; margin-top:15px; }
-    .confirm-buttons button { flex:1; padding:10px; }
+
+    .confirm-content {
+      background:white;
+      padding:20px;
+      border-radius:8px;
+      text-align:center;
+      width:300px;
+    }
+
+    .confirm-buttons {
+      display:flex;
+      gap:10px;
+      margin-top:15px;
+    }
+
+    .confirm-buttons button { flex:1; }
 
     .hidden { display:none; }
   </style>
@@ -49,6 +74,7 @@
   </div>
 </div>
 
+<!-- FORM -->
 <input id="name" placeholder="Child Name">
 <input id="father" placeholder="Father Name">
 <input id="contact" placeholder="Contact (11 digits)">
@@ -60,17 +86,24 @@
 
 <select id="edema">
   <option value="">Edema</option>
-  <option>0</option><option>+</option><option>++</option><option>+++</option>
+  <option>0</option>
+  <option>+</option>
+  <option>++</option>
+  <option>+++</option>
 </select>
 
 <select id="appetite">
   <option value="">Appetite</option>
-  <option>Pass</option><option>Fail</option>
+  <option>Pass</option>
+  <option>Fail</option>
 </select>
 
 <select id="complications">
-  <option>No</option><option>Yes</option>
+  <option>No</option>
+  <option>Yes</option>
 </select>
+
+<input id="complication_detail" placeholder="If yes, specify">
 
 <button onclick="register()">Register</button>
 
@@ -80,7 +113,7 @@
 <script>
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+  apiKey: "YOUR_API_KEY",
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
   projectId: "otp-dashboard-3c17e"
 };
@@ -90,8 +123,8 @@ const db = firebase.firestore();
 
 // POPUP
 function showPopup(msg,type="success"){
-  popupText.innerText = msg;
-  popup.className = "popup " + type;
+  popupText.innerText=msg;
+  popup.className="popup "+type;
   popup.classList.remove("hidden");
 }
 function closePopup(){ popup.classList.add("hidden"); }
@@ -103,21 +136,24 @@ function showConfirm(msg,action){
   confirmBox.classList.remove("hidden");
   confirmAction=action;
 }
-function confirmYes(){ confirmBox.classList.add("hidden"); if(confirmAction) confirmAction(); }
+function confirmYes(){
+  confirmBox.classList.add("hidden");
+  if(confirmAction) confirmAction();
+}
 function confirmNo(){ confirmBox.classList.add("hidden"); }
 
 // AGE
 function calcAge(){
   let d1=new Date(dob.value);
   let d2=new Date(admission_date.value);
-  return (d2.getFullYear()-d1.getFullYear())*12 + (d2.getMonth()-d1.getMonth());
+  return (d2.getFullYear()-d1.getFullYear())*12+(d2.getMonth()-d1.getMonth());
 }
 
 // REGISTER
 async function register(){
 
-  if(!name.value || !contact.value || !dob.value || !admission_date.value)
-    return showPopup("❌ Fill all required fields","error");
+  if(!name.value || !contact.value)
+    return showPopup("❌ Fill required fields","error");
 
   if(contact.value.length!=11)
     return showPopup("❌ Contact must be 11 digits","error");
@@ -135,6 +171,12 @@ async function register(){
     contact:contact.value,
     dob:dob.value,
     admission_date:admission_date.value,
+    muac:muac.value,
+    weight:weight.value,
+    edema:edema.value,
+    appetite:appetite.value,
+    complications:complications.value,
+    complication_detail:complication_detail.value,
     age
   });
 
