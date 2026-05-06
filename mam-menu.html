@@ -1,39 +1,357 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
-  <title>MAM Cases</title>
+  <title>SAM Module</title>
+
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    .btn {
-      display: block;
-      width: 90%;
-      max-width: 400px;
-      margin: 15px auto;
-      padding: 15px;
-      font-size: 18px;
-      border: none;
+    body { font-family: Arial; max-width: 750px; margin:auto; padding:15px; background:#f4f4f4;}
+    .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
+    input, select { width:100%; padding:10px; margin:5px 0; }
+    button { width:100%; padding:12px; margin-top:5px; cursor:pointer; }
+    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
+    .hidden { display:none !important; }
+    #profile { background:#e3f2fd; padding:10px; }
+
+    /* POPUP */
+    .popup {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      z-index: 2000;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: #e8f5e9;
+    }
+
+    .close-btn {
+      background:none;
+      border:none;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    /* CONFIRM */
+    .confirm {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+    }
+
+    .confirm-content {
+      background: white;
+      padding: 20px;
       border-radius: 8px;
-      background: orange;
-      color: white;
+      text-align: center;
+      width: 300px;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .confirm-buttons button {
+      flex: 1;
+      padding: 10px;
     }
   </style>
 </head>
 
 <body>
 
-<h2>MAM CASES</h2>
+<h2>SAM Module</h2>
 
-<button class="btn" onclick="alert('MAM form coming next')">
-  Register New Case
-</button>
+<!-- POPUP -->
+<div id="popup" class="popup hidden">
+  <span id="popupText"></span>
+  <button onclick="closePopup()" class="close-btn">✖</button>
+</div>
 
-<button class="btn" onclick="alert('MAM edit coming next')">
-  Edit Existing Case
-</button>
+<!-- CONFIRM -->
+<div id="confirmBox" class="confirm hidden">
+  <div class="confirm-content">
+    <p id="confirmText">Are you sure?</p>
 
-<button class="btn" onclick="location='entry-otp.html'">
-  ⬅ Back
-</button>
+    <div class="confirm-buttons">
+      <button onclick="confirmYes()">YES</button>
+      <button onclick="confirmNo()">NO</button>
+    </div>
+  </div>
+</div>
+
+<div id="msg"></div>
+
+<!-- MAIN -->
+<div class="card">
+  <button onclick="goRegister()">1. Register New SAM Case</button>
+  <button onclick="showSearch()">2. Search Existing Case</button>
+</div>
+
+<!-- SEARCH -->
+<div id="searchBox" class="card hidden">
+  <input id="search_id" placeholder="Enter Child ID">
+  <button onclick="searchChild()">Search</button>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="hidden"></div>
+
+<!-- ACTIONS -->
+<div id="actions" class="card hidden">
+  <button onclick="showModify()">Modify Case</button>
+  <button onclick="deleteCase()">Delete Case</button>
+  <button onclick="showVisit()">Add Visit</button>
+</div>
+
+<!-- MODIFY -->
+<div id="modifyForm" class="card hidden">
+  <h3>Modify Case</h3>
+  <input id="m_name">
+  <input id="m_father">
+  <input id="m_contact">
+  <button onclick="updateCase()">Update</button>
+</div>
+
+<!-- VISIT -->
+<div id="visitForm" class="card hidden">
+  <h3>Add Visit</h3>
+
+  <input id="visit_no" readonly>
+  <input id="visit_date" type="date">
+
+  <input id="muac" placeholder="MUAC">
+  <input id="weight" placeholder="Weight">
+
+  <select id="edema">
+    <option value="">Edema</option>
+    <option>0</option><option>+</option><option>++</option><option>+++</option>
+  </select>
+
+  <select id="appetite">
+    <option value="">Appetite</option>
+    <option>Pass</option><option>Fail</option>
+  </select>
+
+  <select id="complications">
+    <option value="">Complications</option>
+    <option>No</option><option>Yes</option>
+  </select>
+
+  <input id="rutf_total" placeholder="Total Sachets Given">
+  <input id="rutf_daily" placeholder="Sachets per Day">
+
+  <button onclick="saveVisit()">Save Visit</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+  authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+  projectId: "otp-dashboard-3c17e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentDocId = null;
+let currentChild = null;
+
+/* POPUP */
+function showPopup(msg){
+  popupText.innerText = msg;
+  popup.classList.remove("hidden");
+}
+function closePopup(){
+  popup.classList.add("hidden");
+}
+
+/* CONFIRM */
+let confirmAction = null;
+
+function showConfirm(message, action){
+  confirmText.innerText = message || "Are you sure?";
+  confirmBox.classList.remove("hidden");
+  confirmAction = action;
+}
+
+function confirmYes(){
+  confirmBox.classList.add("hidden");
+  if(confirmAction){
+    confirmAction();
+    confirmAction = null;
+  }
+}
+
+function confirmNo(){
+  confirmBox.classList.add("hidden");
+  confirmAction = null;
+}
+
+/* MESSAGE */
+function showMsg(t, ok=true){
+  msg.innerText = t;
+  msg.style.color = ok ? "green" : "red";
+  showPopup(t);
+}
+
+/* NAV */
+function goRegister(){ window.location.href="sam.html"; }
+
+function showSearch(){
+  searchBox.classList.remove("hidden");
+}
+
+/* SEARCH */
+async function searchChild(){
+
+  let id = search_id.value.trim().toUpperCase();
+  if (!id) return showMsg("Enter ID", false);
+
+  let snap = await db.collection("otp_children")
+    .where("child_id","==",id).get();
+
+  if (snap.empty) return showMsg("Not found", false);
+
+  snap.forEach(doc=>{
+    currentDocId = doc.id;
+    currentChild = doc.data();
+  });
+
+  profile.innerHTML = `<b>${currentChild.child_id}</b><br>${currentChild.name}`;
+  profile.classList.remove("hidden");
+  actions.classList.remove("hidden");
+
+  showMsg("✔ Case Loaded");
+}
+
+/* MODIFY */
+function showModify(){
+
+  if(!currentChild) return showMsg("Search first", false);
+
+  modifyForm.classList.remove("hidden");
+
+  m_name.value = currentChild.name || "";
+  m_father.value = currentChild.father || "";
+  m_contact.value = currentChild.contact || "";
+}
+
+async function updateCase(){
+
+  if(!currentDocId) return showMsg("No case selected", false);
+
+  await db.collection("otp_children").doc(currentDocId).update({
+    name: m_name.value,
+    father: m_father.value,
+    contact: m_contact.value
+  });
+
+  showMsg("✔ Updated");
+}
+
+/* DELETE */
+function deleteCase(){
+
+  if(!currentDocId) return showMsg("No case selected", false);
+
+  showConfirm("Are you sure you want to delete this case?", deleteConfirmed);
+}
+
+async function deleteConfirmed(){
+
+  await db.collection("otp_children").doc(currentDocId).delete();
+
+  showMsg("✔ Deleted");
+
+  location.reload();
+}
+
+/* VISIT */
+async function showVisit(){
+
+  if(!currentChild) return showMsg("Search first", false);
+
+  visitForm.classList.remove("hidden");
+
+  let snap = await db.collection("otp_visits")
+    .where("child_id","==",currentChild.child_id).get();
+
+  let nextVisit = snap.size + 2;
+
+  if (nextVisit > 11)
+    return showMsg("Max visits reached", false);
+
+  visit_no.value = nextVisit;
+}
+
+/* VALIDATION */
+function validateVisit(){
+
+  let muacVal = parseFloat(muac.value);
+  let edemaVal = edema.value;
+
+  if (muacVal >= 11.5 && muacVal < 12.5 && edemaVal==="0")
+    return "MAM case → exit SAM";
+
+  if (muacVal >= 12.5 && edemaVal==="0")
+    return "Normal child";
+
+  if (edemaVal==="+++")
+    return "Refer NSC";
+
+  if (complications.value==="Yes")
+    return "Complicated → refer NSC";
+
+  if (appetite.value==="Fail")
+    return "Appetite fail → refer NSC";
+
+  return null;
+}
+
+/* SAVE VISIT */
+async function saveVisit(){
+
+  if (!visit_date.value || !muac.value || !weight.value)
+    return showMsg("Fill required fields", false);
+
+  let v = validateVisit();
+  if (v) return showMsg(v, false);
+
+  await db.collection("otp_visits").add({
+    child_id: currentChild.child_id,
+    visit_no: parseInt(visit_no.value),
+    date: visit_date.value,
+    muac: muac.value,
+    weight: weight.value,
+    edema: edema.value,
+    appetite: appetite.value,
+    complications: complications.value,
+    rutf_total: rutf_total.value,
+    rutf_daily: rutf_daily.value
+  });
+
+  showMsg("✔ Visit Saved");
+}
+
+</script>
 
 </body>
 </html>
