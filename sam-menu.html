@@ -12,7 +12,6 @@
     .hidden { display:none; }
     #profile { background:#e3f2fd; padding:10px; }
 
-    /* POPUP */
     .popup {
       position: fixed;
       top: 20px;
@@ -24,51 +23,27 @@
       z-index: 999;
       display: flex;
       gap: 10px;
-      align-items: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .popup.success { background:#e8f5e9; color:green; }
-    .popup.error { background:#ffebee; color:red; }
-
-    .close-btn {
-      background:none;
-      border:none;
-      cursor:pointer;
-      font-weight:bold;
+      background:#e8f5e9;
     }
 
-    /* CONFIRM */
     .confirm {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
 
     .confirm-content {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      width: 300px;
+      background:white;
+      padding:20px;
+      border-radius:8px;
+      text-align:center;
     }
 
-    .confirm-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .confirm-buttons button {
-      flex: 1;
-      padding: 10px;
-    }
+    .hidden { display:none; }
   </style>
 </head>
 
@@ -76,20 +51,16 @@
 
 <h2>SAM Module</h2>
 
-<!-- POPUP -->
 <div id="popup" class="popup hidden">
   <span id="popupText"></span>
-  <button onclick="closePopup()" class="close-btn">✖</button>
+  <button onclick="closePopup()">✖</button>
 </div>
 
-<!-- CONFIRM -->
 <div id="confirmBox" class="confirm hidden">
   <div class="confirm-content">
     <p id="confirmText"></p>
-    <div class="confirm-buttons">
-      <button onclick="confirmYes()">YES</button>
-      <button onclick="confirmNo()">NO</button>
-    </div>
+    <button onclick="confirmYes()">YES</button>
+    <button onclick="confirmNo()">NO</button>
   </div>
 </div>
 
@@ -117,18 +88,16 @@
   <button onclick="showVisit()">Add Visit</button>
 </div>
 
-<!-- MODIFY FORM -->
+<!-- MODIFY -->
 <div id="modifyForm" class="card hidden">
   <h3>Modify Case</h3>
-
   <input id="m_name">
   <input id="m_father">
   <input id="m_contact">
-
   <button onclick="updateCase()">Update</button>
 </div>
 
-<!-- VISIT FORM -->
+<!-- VISIT -->
 <div id="visitForm" class="card hidden">
   <h3>Add Visit</h3>
 
@@ -153,13 +122,12 @@
     <option>No</option><option>Yes</option>
   </select>
 
-  <input id="rutf_total" placeholder="Total Sachets Given">
+  <input id="rutf_total" placeholder="Total Sachets">
   <input id="rutf_daily" placeholder="Sachets per Day">
 
   <button onclick="saveVisit()">Save Visit</button>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -177,17 +145,18 @@ const db = firebase.firestore();
 let currentDocId = null;
 let currentChild = null;
 
-/* POPUP */
-function showPopup(msg,type="success"){
+// POPUP
+function showPopup(msg){
   popupText.innerText = msg;
-  popup.className = "popup " + type;
   popup.classList.remove("hidden");
 }
-function closePopup(){ popup.classList.add("hidden"); }
+function closePopup(){
+  popup.classList.add("hidden");
+}
 
-/* CONFIRM */
+// CONFIRM
 let confirmAction=null;
-function showConfirm(msg,action){
+function showConfirm(msg, action){
   confirmText.innerText = msg;
   confirmBox.classList.remove("hidden");
   confirmAction = action;
@@ -196,36 +165,33 @@ function confirmYes(){
   confirmBox.classList.add("hidden");
   if(confirmAction) confirmAction();
 }
-function confirmNo(){ confirmBox.classList.add("hidden"); }
+function confirmNo(){
+  confirmBox.classList.add("hidden");
+}
 
-// MESSAGE (kept for compatibility)
+// MESSAGE
 function showMsg(t, ok=true){
   msg.innerText = t;
   msg.style.color = ok ? "green" : "red";
+  showPopup(t);
 }
 
 // NAV
 function goRegister(){ window.location.href="sam.html"; }
-function showSearch(){ searchBox.classList.remove("hidden"); }
+function showSearch(){
+  searchBox.classList.remove("hidden");
+}
 
 // SEARCH
 async function searchChild(){
 
   let id = search_id.value.trim().toUpperCase();
-
-  if (!id){
-    showPopup("❌ Enter ID","error");
-    return showMsg("Enter ID", false);
-  }
+  if (!id) return showMsg("Enter ID", false);
 
   let snap = await db.collection("otp_children")
-    .where("child_id","==",id)
-    .get();
+    .where("child_id","==",id).get();
 
-  if (snap.empty){
-    showPopup("❌ Not found","error");
-    return showMsg("Not found", false);
-  }
+  if (snap.empty) return showMsg("Not found", false);
 
   snap.forEach(doc=>{
     currentDocId = doc.id;
@@ -236,20 +202,22 @@ async function searchChild(){
   profile.classList.remove("hidden");
   actions.classList.remove("hidden");
 
-  showPopup("✔ Case Loaded");
-  showMsg("Loaded");
+  showMsg("✔ Case Loaded");
 }
 
 // MODIFY
 function showModify(){
+  if(!currentChild) return showMsg("Search first", false);
+
   modifyForm.classList.remove("hidden");
 
-  m_name.value = currentChild.name;
-  m_father.value = currentChild.father;
-  m_contact.value = currentChild.contact;
+  m_name.value = currentChild.name || "";
+  m_father.value = currentChild.father || "";
+  m_contact.value = currentChild.contact || "";
 }
 
 async function updateCase(){
+  if(!currentDocId) return showMsg("No case selected", false);
 
   await db.collection("otp_children").doc(currentDocId).update({
     name: m_name.value,
@@ -257,45 +225,41 @@ async function updateCase(){
     contact: m_contact.value
   });
 
-  showPopup("✔ Updated");
   showMsg("✔ Updated");
 }
 
-// DELETE (UPDATED SAFELY)
+// DELETE
 function deleteCase(){
-  showConfirm("Are you sure to delete?", deleteConfirmed);
+  if(!currentDocId) return showMsg("No case selected", false);
+
+  showConfirm("Delete this case?", deleteConfirmed);
 }
 
 async function deleteConfirmed(){
-
   await db.collection("otp_children").doc(currentDocId).delete();
-
-  showPopup("✔ Deleted");
   showMsg("Deleted");
-
   location.reload();
 }
 
 // VISIT
 async function showVisit(){
 
+  if(!currentChild) return showMsg("Search first", false);
+
   visitForm.classList.remove("hidden");
 
   let snap = await db.collection("otp_visits")
-    .where("child_id","==",currentChild.child_id)
-    .get();
+    .where("child_id","==",currentChild.child_id).get();
 
   let nextVisit = snap.size + 2;
 
-  if (nextVisit > 11){
-    showPopup("❌ Max visits reached","error");
+  if (nextVisit > 11)
     return showMsg("Max visits reached", false);
-  }
 
   visit_no.value = nextVisit;
 }
 
-// VALIDATION (UNCHANGED)
+// VALIDATION
 function validateVisit(){
 
   let muacVal = parseFloat(muac.value);
@@ -322,16 +286,11 @@ function validateVisit(){
 // SAVE VISIT
 async function saveVisit(){
 
-  if (!visit_date.value || !muac.value || !weight.value){
-    showPopup("❌ Fill required fields","error");
+  if (!visit_date.value || !muac.value || !weight.value)
     return showMsg("Fill required fields", false);
-  }
 
   let v = validateVisit();
-  if (v){
-    showPopup("❌ " + v,"error");
-    return showMsg(v, false);
-  }
+  if (v) return showMsg(v, false);
 
   await db.collection("otp_visits").add({
     child_id: currentChild.child_id,
@@ -346,7 +305,6 @@ async function saveVisit(){
     rutf_daily: rutf_daily.value
   });
 
-  showPopup("✔ Visit Saved");
   showMsg("✔ Visit Saved");
 }
 
