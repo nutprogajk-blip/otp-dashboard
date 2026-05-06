@@ -10,12 +10,86 @@
     button { width:100%; padding:12px; background:green; color:white; border:none; cursor:pointer; }
     #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
     #child_id_box { background:#e8f5e9; padding:10px; margin-bottom:10px; font-weight:bold; text-align:center; }
+
+    /* POPUP */
+    .popup {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      z-index: 999;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .popup.success { background:#e8f5e9; color:green; }
+    .popup.error { background:#ffebee; color:red; }
+
+    .close-btn {
+      background:none;
+      border:none;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    /* CONFIRM (kept ready for future use) */
+    .confirm {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .confirm-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      width: 300px;
+    }
+    .confirm-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .confirm-buttons button {
+      flex: 1;
+      padding: 10px;
+    }
+
+    .hidden { display:none; }
   </style>
 </head>
 
 <body>
 
 <h2>SAM Case Registration</h2>
+
+<!-- POPUP -->
+<div id="popup" class="popup hidden">
+  <span id="popupText"></span>
+  <button onclick="closePopup()" class="close-btn">✖</button>
+</div>
+
+<!-- CONFIRM -->
+<div id="confirmBox" class="confirm hidden">
+  <div class="confirm-content">
+    <p id="confirmText"></p>
+    <div class="confirm-buttons">
+      <button onclick="confirmYes()">YES</button>
+      <button onclick="confirmNo()">NO</button>
+    </div>
+  </div>
+</div>
 
 <div id="child_id_box">Child ID: -</div>
 <div id="msg"></div>
@@ -99,7 +173,6 @@
 
 <script>
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
@@ -109,11 +182,31 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// MESSAGE
+/* POPUP */
+function showPopup(msg,type="success"){
+  popupText.innerText = msg;
+  popup.className = "popup " + type;
+  popup.classList.remove("hidden");
+}
+function closePopup(){ popup.classList.add("hidden"); }
+
+/* CONFIRM (for future use) */
+let confirmAction=null;
+function showConfirm(msg,action){
+  confirmText.innerText = msg;
+  confirmBox.classList.remove("hidden");
+  confirmAction = action;
+}
+function confirmYes(){ confirmBox.classList.add("hidden"); if(confirmAction) confirmAction(); }
+function confirmNo(){ confirmBox.classList.add("hidden"); }
+
+/* MESSAGE (kept but now also shows popup) */
 function showMsg(t, ok=true){
   const m = document.getElementById("msg");
   m.innerText = t;
   m.style.color = ok ? "green" : "red";
+
+  showPopup(t, ok ? "success" : "error");
 }
 
 // AGE
@@ -132,9 +225,8 @@ function calcAge(){
   document.getElementById("age").value = m;
 }
 
-// CHILD ID GENERATOR
+// CHILD ID
 function generateChildID(){
-
   let name = document.getElementById("name").value.trim();
   let contact = document.getElementById("contact").value.trim();
 
@@ -150,65 +242,59 @@ function generateChildID(){
 }
 
 // EVENTS
-document.getElementById("dob").addEventListener("change", calcAge);
-document.getElementById("admission_date").addEventListener("change", calcAge);
-document.getElementById("name").addEventListener("input", generateChildID);
-document.getElementById("contact").addEventListener("input", generateChildID);
+dob.addEventListener("change", calcAge);
+admission_date.addEventListener("change", calcAge);
+name.addEventListener("input", generateChildID);
+contact.addEventListener("input", generateChildID);
 
-// VALIDATION FUNCTION
+// VALIDATION
 function validateSAM(data){
 
   let muac = parseFloat(data.muac);
   let edema = data.edema;
 
-  if (muac >= 11.5 && muac < 12.5 && edema === "0"){
+  if (muac >= 11.5 && muac < 12.5 && edema === "0")
     return { ok:false, msg:"⚠ MAM child → register under MAM" };
-  }
 
-  if (muac >= 12.5 && edema === "0"){
+  if (muac >= 12.5 && edema === "0")
     return { ok:false, msg:"⚠ Normal child → no registration needed" };
-  }
 
-  if (edema === "+++"){
+  if (edema === "+++")
     return { ok:false, msg:"⚠ Severe edema (+++) → refer NSC" };
-  }
 
-  if (data.complications === "Yes"){
+  if (data.complications === "Yes")
     return { ok:false, msg:"⚠ Complicated SAM → refer NSC" };
-  }
 
-  if (data.appetite === "Fail"){
+  if (data.appetite === "Fail")
     return { ok:false, msg:"⚠ Appetite fail → refer NSC" };
-  }
 
   return { ok:true };
 }
 
 // REGISTER
-document.getElementById("btn").addEventListener("click", async function(){
+btn.addEventListener("click", async function(){
 
   showMsg("Processing...");
 
   let data = {
-    name: document.getElementById("name").value.trim(),
-    father: document.getElementById("father").value.trim(),
-    gender: document.getElementById("gender").value,
-    dob: document.getElementById("dob").value,
-    admission_date: document.getElementById("admission_date").value,
-    age: parseInt(document.getElementById("age").value),
-    contact: document.getElementById("contact").value.trim(),
-    village: document.getElementById("village").value.trim(),
-    muac: document.getElementById("muac").value,
-    weight: document.getElementById("weight").value,
-    height: document.getElementById("height").value,
-    edema: document.getElementById("edema").value,
-    appetite: document.getElementById("appetite").value,
-    admission_type: document.getElementById("admission_type").value,
-    complications: document.getElementById("complications").value,
-    complication_detail: document.getElementById("complication_detail").value.trim()
+    name: name.value.trim(),
+    father: father.value.trim(),
+    gender: gender.value,
+    dob: dob.value,
+    admission_date: admission_date.value,
+    age: parseInt(age.value),
+    contact: contact.value.trim(),
+    village: village.value.trim(),
+    muac: muac.value,
+    weight: weight.value,
+    height: height.value,
+    edema: edema.value,
+    appetite: appetite.value,
+    admission_type: admission_type.value,
+    complications: complications.value,
+    complication_detail: complication_detail.value.trim()
   };
 
-  // BASIC VALIDATION
   if (!data.name || !data.father || !data.gender)
     return showMsg("Fill basic info", false);
 
@@ -218,17 +304,13 @@ document.getElementById("btn").addEventListener("click", async function(){
   if (!/^\d{11}$/.test(data.contact))
     return showMsg("Invalid contact", false);
 
-  // CHILD ID
   let firstName = data.name.split(" ")[0].toUpperCase();
   data.child_id = firstName + "-" + data.contact;
 
-  // PROTOCOL VALIDATION
   let result = validateSAM(data);
   if (!result.ok) return showMsg(result.msg, false);
 
-  // SAVE
   try {
-
     await db.collection("otp_children").add({
       ...data,
       createdAt: new Date()
