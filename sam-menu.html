@@ -1,49 +1,125 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
   <title>SAM Module</title>
 
   <style>
-    body { font-family: Arial; max-width: 750px; margin:auto; padding:15px; background:#f4f4f4;}
-    .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
-    input, select { width:100%; padding:10px; margin:5px 0; }
-    button { width:100%; padding:12px; margin-top:5px; cursor:pointer; }
-    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
-    .hidden { display:none; }
-    #profile { background:#e3f2fd; padding:10px; }
+
+    body {
+      font-family: Arial;
+      max-width: 750px;
+      margin:auto;
+      padding:15px;
+      background:#f4f4f4;
+    }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+    }
+
+    input, select {
+      width:100%;
+      padding:10px;
+      margin:5px 0;
+      box-sizing:border-box;
+    }
+
+    button {
+      width:100%;
+      padding:12px;
+      margin-top:5px;
+      cursor:pointer;
+    }
+
+    .hidden {
+      display:none !important;
+    }
+
+    #profile {
+      background:#e3f2fd;
+      padding:10px;
+      border-radius:8px;
+    }
+
+    #msg {
+      text-align:center;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    /* POPUP */
 
     .popup {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
+      background: #e8f5e9;
       padding: 15px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-      z-index: 999;
+      border-radius: 8px;
       display: flex;
       gap: 10px;
-      background:#e8f5e9;
+      align-items: center;
+      z-index: 9999;
     }
+
+    .popup button {
+      width:auto;
+      margin:0;
+      padding:5px 10px;
+    }
+
+    /* CONFIRM */
 
     .confirm {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.6);
       display:flex;
       justify-content:center;
       align-items:center;
+      z-index:10000;
     }
 
     .confirm-content {
       background:white;
       padding:20px;
       border-radius:8px;
+      width:300px;
       text-align:center;
     }
 
-    .hidden { display:none; }
+    .confirm-buttons {
+      display:flex;
+      gap:10px;
+      margin-top:15px;
+    }
+
+    .confirm-buttons button {
+      flex:1;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+    }
+
+    table, th, td {
+      border:1px solid #ccc;
+    }
+
+    th, td {
+      padding:8px;
+      text-align:center;
+    }
+
   </style>
 </head>
 
@@ -51,31 +127,48 @@
 
 <h2>SAM Module</h2>
 
+<div id="msg"></div>
+
+<!-- POPUP -->
 <div id="popup" class="popup hidden">
   <span id="popupText"></span>
   <button onclick="closePopup()">✖</button>
 </div>
 
+<!-- CONFIRM -->
 <div id="confirmBox" class="confirm hidden">
   <div class="confirm-content">
-    <p id="confirmText"></p>
-    <button onclick="confirmYes()">YES</button>
-    <button onclick="confirmNo()">NO</button>
+
+    <p id="confirmText">Are you sure?</p>
+
+    <div class="confirm-buttons">
+      <button onclick="confirmYes()">YES</button>
+      <button onclick="confirmNo()">NO</button>
+    </div>
+
   </div>
 </div>
 
-<div id="msg"></div>
-
 <!-- MAIN -->
 <div class="card">
-  <button onclick="goRegister()">1. Register New SAM Case</button>
-  <button onclick="showSearch()">2. Search Existing Case</button>
+
+  <button onclick="goRegister()">
+    1. Register New SAM Case
+  </button>
+
+  <button onclick="showSearch()">
+    2. Search Existing Case
+  </button>
+
 </div>
 
 <!-- SEARCH -->
 <div id="searchBox" class="card hidden">
+
   <input id="search_id" placeholder="Enter Child ID">
+
   <button onclick="searchChild()">Search</button>
+
 </div>
 
 <!-- PROFILE -->
@@ -83,229 +176,491 @@
 
 <!-- ACTIONS -->
 <div id="actions" class="card hidden">
-  <button onclick="showModify()">Modify Case</button>
-  <button onclick="deleteCase()">Delete Case</button>
-  <button onclick="showVisit()">Add Visit</button>
+
+  <button onclick="showModify()">
+    Modify Case
+  </button>
+
+  <button onclick="deleteCase()">
+    Delete Case
+  </button>
+
+  <button onclick="showVisit()">
+    Add Visit
+  </button>
+
 </div>
 
 <!-- MODIFY -->
 <div id="modifyForm" class="card hidden">
+
   <h3>Modify Case</h3>
-  <input id="m_name">
-  <input id="m_father">
-  <input id="m_contact">
-  <button onclick="updateCase()">Update</button>
+
+  <input id="m_name" placeholder="Child Name">
+
+  <input id="m_father" placeholder="Father Name">
+
+  <input id="m_contact" placeholder="Contact">
+
+  <button onclick="updateCase()">
+    Update
+  </button>
+
 </div>
 
 <!-- VISIT -->
 <div id="visitForm" class="card hidden">
+
   <h3>Add Visit</h3>
 
   <input id="visit_no" readonly>
+
+  <label>Visit Date</label>
   <input id="visit_date" type="date">
 
   <input id="muac" placeholder="MUAC">
+
   <input id="weight" placeholder="Weight">
 
   <select id="edema">
     <option value="">Edema</option>
-    <option>0</option><option>+</option><option>++</option><option>+++</option>
+    <option>0</option>
+    <option>+</option>
+    <option>++</option>
+    <option>+++</option>
   </select>
 
   <select id="appetite">
     <option value="">Appetite</option>
-    <option>Pass</option><option>Fail</option>
+    <option>Pass</option>
+    <option>Fail</option>
   </select>
 
   <select id="complications">
     <option value="">Complications</option>
-    <option>No</option><option>Yes</option>
+    <option>No</option>
+    <option>Yes</option>
   </select>
 
-  <input id="rutf_total" placeholder="Total Sachets">
+  <input id="rutf_total" placeholder="Total Sachets Given">
+
   <input id="rutf_daily" placeholder="Sachets per Day">
 
-  <button onclick="saveVisit()">Save Visit</button>
+  <button onclick="saveVisit()">
+    Save Visit
+  </button>
+
 </div>
 
+<!-- VISITS HISTORY -->
+<div id="visitHistory" class="card hidden">
+
+  <h3>Visit History</h3>
+
+  <div id="visitTable"></div>
+
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
 
 const firebaseConfig = {
+
   apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
+
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
+
   projectId: "otp-dashboard-3c17e"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
 const db = firebase.firestore();
 
 let currentDocId = null;
 let currentChild = null;
 
-// POPUP
-function showPopup(msg){
-  popupText.innerText = msg;
+/* POPUP */
+
+function showPopup(text){
+
+  popupText.innerText = text;
+
   popup.classList.remove("hidden");
 }
+
 function closePopup(){
+
   popup.classList.add("hidden");
 }
 
-// CONFIRM
-let confirmAction=null;
-function showConfirm(msg, action){
-  confirmText.innerText = msg;
-  confirmBox.classList.remove("hidden");
+/* CONFIRM */
+
+let confirmAction = null;
+
+function showConfirm(text, action){
+
+  confirmText.innerText = text;
+
   confirmAction = action;
+
+  confirmBox.classList.remove("hidden");
 }
+
 function confirmYes(){
+
   confirmBox.classList.add("hidden");
-  if(confirmAction) confirmAction();
+
+  if(confirmAction){
+    confirmAction();
+  }
+
+  confirmAction = null;
 }
+
 function confirmNo(){
+
   confirmBox.classList.add("hidden");
+
+  confirmAction = null;
 }
 
-// MESSAGE
-function showMsg(t, ok=true){
-  msg.innerText = t;
+/* MESSAGE */
+
+function showMsg(text, ok=true){
+
+  msg.innerText = text;
+
   msg.style.color = ok ? "green" : "red";
-  showPopup(t);
+
+  showPopup(text);
 }
 
-// NAV
-function goRegister(){ window.location.href="sam.html"; }
+/* NAVIGATION */
+
+function goRegister(){
+
+  window.location.href = "sam.html";
+}
+
 function showSearch(){
+
   searchBox.classList.remove("hidden");
 }
 
-// SEARCH
+/* SEARCH */
+
 async function searchChild(){
 
   let id = search_id.value.trim().toUpperCase();
-  if (!id) return showMsg("Enter ID", false);
+
+  if(!id)
+    return showMsg("Enter Child ID", false);
 
   let snap = await db.collection("otp_children")
-    .where("child_id","==",id).get();
+    .where("child_id","==",id)
+    .get();
 
-  if (snap.empty) return showMsg("Not found", false);
+  if(snap.empty)
+    return showMsg("Case not found", false);
 
   snap.forEach(doc=>{
+
     currentDocId = doc.id;
+
     currentChild = doc.data();
   });
 
-  profile.innerHTML = `<b>${currentChild.child_id}</b><br>${currentChild.name}`;
+  profile.innerHTML = `
+
+  <b>${currentChild.child_id}</b><br><br>
+
+  <b>Name:</b> ${currentChild.name}<br>
+
+  <b>Father:</b> ${currentChild.father}<br>
+
+  <b>Gender:</b> ${currentChild.gender}<br>
+
+  <b>Village:</b> ${currentChild.village}<br>
+
+  <b>MUAC:</b> ${currentChild.muac}<br>
+
+  <b>Weight:</b> ${currentChild.weight}<br>
+
+  <b>Height:</b> ${currentChild.height}<br>
+
+  <b>Edema:</b> ${currentChild.edema}<br>
+
+  <b>Admission Date:</b> ${currentChild.admission_date}<br>
+
+  `;
+
   profile.classList.remove("hidden");
+
   actions.classList.remove("hidden");
+
+  loadVisits();
 
   showMsg("✔ Case Loaded");
 }
 
-// MODIFY
+/* LOAD VISITS */
+
+async function loadVisits(){
+
+  let snap = await db.collection("otp_visits")
+    .where("child_id","==",currentChild.child_id)
+    .orderBy("visit_no")
+    .get();
+
+  if(snap.empty){
+
+    visitHistory.classList.add("hidden");
+
+    return;
+  }
+
+  let html = `
+  <table>
+    <tr>
+      <th>Visit</th>
+      <th>Date</th>
+      <th>MUAC</th>
+      <th>Weight</th>
+      <th>Edema</th>
+    </tr>
+  `;
+
+  snap.forEach(doc=>{
+
+    let v = doc.data();
+
+    html += `
+    <tr>
+      <td>${v.visit_no}</td>
+      <td>${v.date}</td>
+      <td>${v.muac}</td>
+      <td>${v.weight}</td>
+      <td>${v.edema}</td>
+    </tr>
+    `;
+  });
+
+  html += `</table>`;
+
+  visitTable.innerHTML = html;
+
+  visitHistory.classList.remove("hidden");
+}
+
+/* MODIFY */
+
 function showModify(){
-  if(!currentChild) return showMsg("Search first", false);
+
+  if(!currentChild)
+    return showMsg("Search first", false);
 
   modifyForm.classList.remove("hidden");
 
   m_name.value = currentChild.name || "";
+
   m_father.value = currentChild.father || "";
+
   m_contact.value = currentChild.contact || "";
 }
 
 async function updateCase(){
-  if(!currentDocId) return showMsg("No case selected", false);
 
-  await db.collection("otp_children").doc(currentDocId).update({
-    name: m_name.value,
-    father: m_father.value,
-    contact: m_contact.value
-  });
+  if(!currentDocId)
+    return showMsg("No case selected", false);
 
-  showMsg("✔ Updated");
+  await db.collection("otp_children")
+    .doc(currentDocId)
+    .update({
+
+      name: m_name.value,
+
+      father: m_father.value,
+
+      contact: m_contact.value
+    });
+
+  showMsg("✔ Case Updated");
 }
 
-// DELETE
-function deleteCase(){
-  if(!currentDocId) return showMsg("No case selected", false);
+/* DELETE */
 
-  showConfirm("Delete this case?", deleteConfirmed);
+function deleteCase(){
+
+  if(!currentDocId)
+    return showMsg("No case selected", false);
+
+  showConfirm(
+    "Delete this case?",
+    deleteConfirmed
+  );
 }
 
 async function deleteConfirmed(){
-  await db.collection("otp_children").doc(currentDocId).delete();
-  showMsg("Deleted");
+
+  await db.collection("otp_children")
+    .doc(currentDocId)
+    .delete();
+
+  showMsg("✔ Case Deleted");
+
   location.reload();
 }
 
-// VISIT
+/* SHOW VISIT */
+
 async function showVisit(){
 
-  if(!currentChild) return showMsg("Search first", false);
+  if(!currentChild)
+    return showMsg("Search first", false);
 
   visitForm.classList.remove("hidden");
 
   let snap = await db.collection("otp_visits")
-    .where("child_id","==",currentChild.child_id).get();
+    .where("child_id","==",currentChild.child_id)
+    .orderBy("visit_no")
+    .get();
 
   let nextVisit = snap.size + 2;
 
-  if (nextVisit > 11)
-    return showMsg("Max visits reached", false);
+  if(nextVisit > 11)
+    return showMsg("Maximum visits reached", false);
 
   visit_no.value = nextVisit;
 }
 
-// VALIDATION
+/* VISIT VALIDATION */
+
 function validateVisit(){
 
-  let muacVal = parseFloat(muac.value);
   let edemaVal = edema.value;
 
-  if (muacVal >= 11.5 && muacVal < 12.5 && edemaVal==="0")
-    return "MAM case → exit SAM";
+  if(edemaVal === "+++"){
+    return "⚠ Severe edema (+++) → refer NSC";
+  }
 
-  if (muacVal >= 12.5 && edemaVal==="0")
-    return "Normal child";
+  if(complications.value === "Yes"){
+    return "⚠ Complicated SAM → refer NSC";
+  }
 
-  if (edemaVal==="+++")
-    return "Refer NSC";
-
-  if (complications.value==="Yes")
-    return "Complicated → refer NSC";
-
-  if (appetite.value==="Fail")
-    return "Appetite fail → refer NSC";
+  if(appetite.value === "Fail"){
+    return "⚠ Appetite fail → refer NSC";
+  }
 
   return null;
 }
 
-// SAVE VISIT
+/* VISIT GAP VALIDATION */
+
+async function validateVisitGap(){
+
+  let visitDate = new Date(visit_date.value);
+
+  // VISIT 2
+  if(parseInt(visit_no.value) === 2){
+
+    let admissionDate = new Date(currentChild.admission_date);
+
+    let diff = (visitDate - admissionDate)
+      / (1000*60*60*24);
+
+    if(diff < 10){
+      return "Visit 2 must be at least 10 days after admission";
+    }
+
+  } else {
+
+    let snap = await db.collection("otp_visits")
+      .where("child_id","==",currentChild.child_id)
+      .orderBy("visit_no","desc")
+      .limit(1)
+      .get();
+
+    if(!snap.empty){
+
+      let lastVisit = snap.docs[0].data();
+
+      let lastDate = new Date(lastVisit.date);
+
+      let diff = (visitDate - lastDate)
+        / (1000*60*60*24);
+
+      if(diff < 10){
+        return "Visits must be at least 10 days apart";
+      }
+    }
+  }
+
+  return null;
+}
+
+/* SAVE VISIT */
+
 async function saveVisit(){
 
-  if (!visit_date.value || !muac.value || !weight.value)
+  if(!currentChild)
+    return showMsg("Search first", false);
+
+  if(!visit_date.value || !muac.value || !weight.value)
     return showMsg("Fill required fields", false);
 
+  let gapError = await validateVisitGap();
+
+  if(gapError)
+    return showMsg(gapError, false);
+
   let v = validateVisit();
-  if (v) return showMsg(v, false);
 
-  await db.collection("otp_visits").add({
-    child_id: currentChild.child_id,
-    visit_no: parseInt(visit_no.value),
-    date: visit_date.value,
-    muac: muac.value,
-    weight: weight.value,
-    edema: edema.value,
-    appetite: appetite.value,
-    complications: complications.value,
-    rutf_total: rutf_total.value,
-    rutf_daily: rutf_daily.value
-  });
+  if(v)
+    return showMsg(v, false);
 
-  showMsg("✔ Visit Saved");
+  try {
+
+    await db.collection("otp_visits").add({
+
+      child_id: currentChild.child_id,
+
+      visit_no: parseInt(visit_no.value),
+
+      date: visit_date.value,
+
+      muac: muac.value,
+
+      weight: weight.value,
+
+      edema: edema.value,
+
+      appetite: appetite.value,
+
+      complications: complications.value,
+
+      rutf_total: rutf_total.value,
+
+      rutf_daily: rutf_daily.value
+
+    });
+
+    showMsg("✔ Visit Saved");
+
+    loadVisits();
+
+  } catch(e){
+
+    console.error(e);
+
+    showMsg("❌ " + e.message, false);
+  }
 }
 
 </script>
