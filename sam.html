@@ -4,69 +4,57 @@
   <title>SAM Registration</title>
 
   <style>
-    body { font-family: Arial; max-width: 600px; margin:auto; padding:15px; background:#f4f4f4;}
-    .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
-    input, select { width:100%; padding:10px; margin:5px 0; }
-    button { width:100%; padding:12px; background:green; color:white; border:none; cursor:pointer; }
-    #msg { text-align:center; font-weight:bold; margin-bottom:10px; }
-    #child_id_box { background:#e8f5e9; padding:10px; margin-bottom:10px; font-weight:bold; text-align:center; }
-
-    /* POPUP */
-    .popup {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 15px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-      z-index: 999;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .popup.success { background:#e8f5e9; color:green; }
-    .popup.error { background:#ffebee; color:red; }
-
-    .close-btn {
-      background:none;
-      border:none;
-      cursor:pointer;
-      font-weight:bold;
+    body {
+      font-family: Arial;
+      max-width: 600px;
+      margin: auto;
+      padding: 15px;
+      background: #f4f4f4;
     }
 
-    /* CONFIRM (kept ready for future use) */
-    .confirm {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .confirm-content {
+    .card {
       background: white;
-      padding: 20px;
+      padding: 15px;
+      margin-bottom: 15px;
       border-radius: 8px;
-      text-align: center;
-      width: 300px;
-    }
-    .confirm-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .confirm-buttons button {
-      flex: 1;
-      padding: 10px;
     }
 
-    .hidden { display:none; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: green;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    #msg {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    #child_id_box {
+      background: #e8f5e9;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 6px;
+    }
   </style>
 </head>
 
@@ -74,95 +62,89 @@
 
 <h2>SAM Case Registration</h2>
 
-<!-- POPUP -->
-<div id="popup" class="popup hidden">
-  <span id="popupText"></span>
-  <button onclick="closePopup()" class="close-btn">✖</button>
-</div>
-
-<!-- CONFIRM -->
-<div id="confirmBox" class="confirm hidden">
-  <div class="confirm-content">
-    <p id="confirmText"></p>
-    <div class="confirm-buttons">
-      <button onclick="confirmYes()">YES</button>
-      <button onclick="confirmNo()">NO</button>
-    </div>
-  </div>
-</div>
-
 <div id="child_id_box">Child ID: -</div>
+
 <div id="msg"></div>
 
 <!-- CHILD INFO -->
 <div class="card">
-<h3>Child Information</h3>
 
-<input id="name" placeholder="Child Name *">
-<input id="father" placeholder="Father Name *">
+  <h3>Child Information</h3>
 
-<select id="gender">
-  <option value="">Gender *</option>
-  <option>Male</option>
-  <option>Female</option>
-</select>
+  <input id="name" placeholder="Child Name *">
 
-<label>Date of Birth *</label>
-<input id="dob" type="date">
+  <input id="father" placeholder="Father Name *">
 
-<label>Admission Date *</label>
-<input id="admission_date" type="date">
+  <select id="gender">
+    <option value="">Gender *</option>
+    <option>Male</option>
+    <option>Female</option>
+  </select>
 
-<input id="age" placeholder="Age (months)" readonly>
+  <label>Date of Birth *</label>
+  <input id="dob" type="date">
 
-<input id="contact" placeholder="Contact (11 digits) *">
-<input id="village" placeholder="Village *">
+  <label>Admission Date *</label>
+  <input id="admission_date" type="date">
+
+  <input id="age" placeholder="Age (months)" readonly>
+
+  <input id="contact" placeholder="Contact (11 digits) *">
+
+  <input id="village" placeholder="Village *">
+
 </div>
 
 <!-- ADMISSION -->
 <div class="card">
-<h3>Admission Details</h3>
 
-<input id="muac" placeholder="MUAC (cm) *">
-<input id="weight" placeholder="Weight (kg) *">
-<input id="height" placeholder="Height (cm) *">
+  <h3>Admission Details</h3>
 
-<select id="edema">
-  <option value="">Edema *</option>
-  <option>0</option>
-  <option>+</option>
-  <option>++</option>
-  <option>+++</option>
-</select>
+  <input id="muac" placeholder="MUAC (cm) *">
 
-<select id="appetite">
-  <option value="">Appetite Test *</option>
-  <option>Pass</option>
-  <option>Fail</option>
-</select>
+  <input id="weight" placeholder="Weight (kg) *">
 
-<select id="admission_type">
-  <option value="">Admission Type *</option>
-  <option>New - Red MUAC</option>
-  <option>New - Edema</option>
-  <option>Readmission - Relapse</option>
-  <option>Readmission - Default</option>
-  <option>Other</option>
-  <option>Transfer from NSC</option>
-</select>
+  <input id="height" placeholder="Height (cm) *">
+
+  <select id="edema">
+    <option value="">Edema *</option>
+    <option>0</option>
+    <option>+</option>
+    <option>++</option>
+    <option>+++</option>
+  </select>
+
+  <select id="appetite">
+    <option value="">Appetite Test *</option>
+    <option>Pass</option>
+    <option>Fail</option>
+  </select>
+
+  <select id="admission_type">
+    <option value="">Admission Type *</option>
+    <option>New - Red MUAC</option>
+    <option>New - Edema</option>
+    <option>Readmission - Relapse</option>
+    <option>Readmission - Default</option>
+    <option>Other</option>
+    <option>Transfer from NSC</option>
+  </select>
+
 </div>
 
 <!-- MEDICAL -->
 <div class="card">
-<h3>Medical</h3>
 
-<select id="complications">
-  <option value="">Complications *</option>
-  <option>No</option>
-  <option>Yes</option>
-</select>
+  <h3>Medical</h3>
 
-<input id="complication_detail" placeholder="If yes, specify">
+  <select id="complications">
+    <option value="">Complications *</option>
+    <option>No</option>
+    <option>Yes</option>
+  </select>
+
+  <input id="complication_detail" placeholder="If yes, specify">
+
 </div>
 
 <button id="btn">Register</button>
@@ -173,144 +155,209 @@
 
 <script>
 
+// FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCB_O-ZucL6efwcMXGNOgTmZwccASrFuZI",
   authDomain: "otp-dashboard-3c17e.firebaseapp.com",
   projectId: "otp-dashboard-3c17e"
 };
 
-firebase.initializeApp(firebaseConfig);
+// SAFE FIREBASE INIT
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
 const db = firebase.firestore();
 
-/* POPUP */
-function showPopup(msg,type="success"){
-  popupText.innerText = msg;
-  popup.className = "popup " + type;
-  popup.classList.remove("hidden");
-}
-function closePopup(){ popup.classList.add("hidden"); }
+// MESSAGE
+function showMsg(text, ok=true){
 
-/* CONFIRM (for future use) */
-let confirmAction=null;
-function showConfirm(msg,action){
-  confirmText.innerText = msg;
-  confirmBox.classList.remove("hidden");
-  confirmAction = action;
-}
-function confirmYes(){ confirmBox.classList.add("hidden"); if(confirmAction) confirmAction(); }
-function confirmNo(){ confirmBox.classList.add("hidden"); }
-
-/* MESSAGE (kept but now also shows popup) */
-function showMsg(t, ok=true){
   const m = document.getElementById("msg");
-  m.innerText = t;
-  m.style.color = ok ? "green" : "red";
 
-  showPopup(t, ok ? "success" : "error");
+  m.innerText = text;
+
+  m.style.color = ok ? "green" : "red";
 }
 
-// AGE
+// AGE CALCULATION
 function calcAge(){
+
   let dob = document.getElementById("dob").value;
+
   let adm = document.getElementById("admission_date").value;
 
   if (!dob || !adm) return;
 
   let d = new Date(dob);
+
   let a = new Date(adm);
 
-  let m = (a.getFullYear()-d.getFullYear())*12;
-  m += (a.getMonth()-d.getMonth());
+  let months = (a.getFullYear() - d.getFullYear()) * 12;
 
-  document.getElementById("age").value = m;
+  months += (a.getMonth() - d.getMonth());
+
+  document.getElementById("age").value = months;
 }
 
 // CHILD ID
 function generateChildID(){
+
   let name = document.getElementById("name").value.trim();
+
   let contact = document.getElementById("contact").value.trim();
 
   if (!name || contact.length !== 11){
+
     document.getElementById("child_id_box").innerText = "Child ID: -";
+
     return;
   }
 
   let firstName = name.split(" ")[0].toUpperCase();
+
   let id = firstName + "-" + contact;
 
   document.getElementById("child_id_box").innerText = "Child ID: " + id;
 }
 
 // EVENTS
-dob.addEventListener("change", calcAge);
-admission_date.addEventListener("change", calcAge);
-name.addEventListener("input", generateChildID);
-contact.addEventListener("input", generateChildID);
+document.getElementById("dob").addEventListener("change", calcAge);
 
-// VALIDATION
+document.getElementById("admission_date").addEventListener("change", calcAge);
+
+document.getElementById("name").addEventListener("input", generateChildID);
+
+document.getElementById("contact").addEventListener("input", generateChildID);
+
+// SAM VALIDATION
 function validateSAM(data){
 
   let muac = parseFloat(data.muac);
+
   let edema = data.edema;
 
-  if (muac >= 11.5 && muac < 12.5 && edema === "0")
-    return { ok:false, msg:"⚠ MAM child → register under MAM" };
+  // MAM
+  if (muac >= 11.5 && muac < 12.5 && edema === "0") {
 
-  if (muac >= 12.5 && edema === "0")
-    return { ok:false, msg:"⚠ Normal child → no registration needed" };
+    return {
+      ok:false,
+      msg:"⚠ MAM child → register under MAM"
+    };
+  }
 
-  if (edema === "+++")
-    return { ok:false, msg:"⚠ Severe edema (+++) → refer NSC" };
+  // NORMAL
+  if (muac >= 12.5 && edema === "0") {
 
-  if (data.complications === "Yes")
-    return { ok:false, msg:"⚠ Complicated SAM → refer NSC" };
+    return {
+      ok:false,
+      msg:"⚠ Normal child → no registration needed"
+    };
+  }
 
-  if (data.appetite === "Fail")
-    return { ok:false, msg:"⚠ Appetite fail → refer NSC" };
+  // SEVERE EDEMA
+  if (edema === "+++") {
+
+    return {
+      ok:false,
+      msg:"⚠ Severe edema (+++) → refer NSC"
+    };
+  }
+
+  // COMPLICATIONS
+  if (data.complications === "Yes") {
+
+    return {
+      ok:false,
+      msg:"⚠ Complicated SAM → refer NSC"
+    };
+  }
+
+  // APPETITE FAIL
+  if (data.appetite === "Fail") {
+
+    return {
+      ok:false,
+      msg:"⚠ Appetite fail → refer NSC"
+    };
+  }
 
   return { ok:true };
 }
 
-// REGISTER
-btn.addEventListener("click", async function(){
+// REGISTER BUTTON
+document.getElementById("btn").addEventListener("click", async function(){
 
   showMsg("Processing...");
 
   let data = {
-    name: name.value.trim(),
-    father: father.value.trim(),
-    gender: gender.value,
-    dob: dob.value,
-    admission_date: admission_date.value,
-    age: parseInt(age.value),
-    contact: contact.value.trim(),
-    village: village.value.trim(),
-    muac: muac.value,
-    weight: weight.value,
-    height: height.value,
-    edema: edema.value,
-    appetite: appetite.value,
-    admission_type: admission_type.value,
-    complications: complications.value,
-    complication_detail: complication_detail.value.trim()
+
+    name: document.getElementById("name").value.trim(),
+
+    father: document.getElementById("father").value.trim(),
+
+    gender: document.getElementById("gender").value,
+
+    dob: document.getElementById("dob").value,
+
+    admission_date: document.getElementById("admission_date").value,
+
+    age: parseInt(document.getElementById("age").value),
+
+    contact: document.getElementById("contact").value.trim(),
+
+    village: document.getElementById("village").value.trim(),
+
+    muac: document.getElementById("muac").value,
+
+    weight: document.getElementById("weight").value,
+
+    height: document.getElementById("height").value,
+
+    edema: document.getElementById("edema").value,
+
+    appetite: document.getElementById("appetite").value,
+
+    admission_type: document.getElementById("admission_type").value,
+
+    complications: document.getElementById("complications").value,
+
+    complication_detail: document.getElementById("complication_detail").value.trim()
   };
 
-  if (!data.name || !data.father || !data.gender)
+  // BASIC VALIDATION
+  if (!data.name || !data.father || !data.gender){
+
     return showMsg("Fill basic info", false);
+  }
 
-  if (data.age < 6 || data.age > 59)
+  // AGE VALIDATION
+  if (data.age < 6 || data.age > 59){
+
     return showMsg("Age must be 6–59 months", false);
+  }
 
-  if (!/^\d{11}$/.test(data.contact))
+  // CONTACT VALIDATION
+  if (!/^\d{11}$/.test(data.contact)){
+
     return showMsg("Invalid contact", false);
+  }
 
+  // CHILD ID
   let firstName = data.name.split(" ")[0].toUpperCase();
+
   data.child_id = firstName + "-" + data.contact;
 
+  // SAM PROTOCOL VALIDATION
   let result = validateSAM(data);
-  if (!result.ok) return showMsg(result.msg, false);
 
+  if (!result.ok){
+
+    return showMsg(result.msg, false);
+  }
+
+  // SAVE TO FIREBASE
   try {
+
     await db.collection("otp_children").add({
       ...data,
       createdAt: new Date()
@@ -318,8 +365,14 @@ btn.addEventListener("click", async function(){
 
     showMsg("✔ Registered Successfully");
 
+    document.getElementById("btn").disabled = true;
+
+    document.getElementById("btn").innerText = "Registered";
+
   } catch(e){
+
     console.error(e);
+
     showMsg("❌ " + e.message, false);
   }
 
